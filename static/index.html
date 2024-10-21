@@ -7,22 +7,50 @@
 </head>
 <body>
     <h1>Go Chat App</h1>
-    <div id="chatbox"></div>
-    <form id="messageForm">
-        <input id="messageInput" type="text" placeholder="Enter your message" required>
-        <button type="submit">Send</button>
-    </form>
+
+    <label for="nameInput">Enter Display Name:</label>
+    <input id="nameInput" type="text" placeholder="Your name" required>
+    <button id="joinChat">Join Chat</button>
+
+    <div id="chatContainer" style="display:none;">
+        <div id="chatbox"></div>
+        <form id="messageForm">
+            <input id="messageInput" type="text" placeholder="Enter your message" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
 
     <script>
-        const socket = new WebSocket("ws://localhost:8080/ws");
+        let socket;
 
-        // Display incoming messages
-        socket.onmessage = function(event) {
-            const chatbox = document.getElementById("chatbox");
-            const message = document.createElement("p");
-            message.textContent = event.data;
-            chatbox.appendChild(message);
-        };
+        document.getElementById("joinChat").addEventListener("click", function() {
+            const nameInput = document.getElementById("nameInput").value;
+            if (!nameInput) {
+                alert("Please enter a display name.");
+                return;
+            }
+
+            // Open WebSocket connection with display name as a query parameter
+            socket = new WebSocket(`ws://localhost:8080/ws?displayName=${encodeURIComponent(nameInput)}`);
+
+            // Show the chatbox after joining
+            document.getElementById("chatContainer").style.display = "block";
+
+            // Display incoming messages with metadata
+            socket.onmessage = function(event) {
+                const chatbox = document.getElementById("chatbox");
+                const messageData = JSON.parse(event.data);
+
+                const messageElement = document.createElement("p");
+                messageElement.textContent = `${messageData.sender} [${new Date(messageData.timestamp).toLocaleTimeString()}]: ${messageData.content}`;
+                chatbox.appendChild(messageElement);
+            };
+
+            // Handle errors
+            socket.onerror = function(error) {
+                console.error("WebSocket error:", error);
+            };
+        });
 
         // Send message on form submit
         const form = document.getElementById("messageForm");

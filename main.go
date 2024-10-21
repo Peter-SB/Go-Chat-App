@@ -1,14 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
 var clients = make(map[*Client]bool)
-var broadcast = make(chan []byte)
+var broadcast = make(chan Message)
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -17,8 +20,16 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	Conn *websocket.Conn
-	Send chan []byte
+	ID          string
+	DisplayName string
+	Conn        *websocket.Conn
+	Send        chan []byte
+}
+
+type Message struct {
+	Sender    string    `json:"sender"`
+	Content   string    `json:"content"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +40,18 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	client := &Client{Conn: ws, Send: make(chan []byte)}
+	id := uuid.New().String()
+	displayName := r.URL.Query().Get("displayName")
+	if displayName == "" {
+		displayName = "Anonymous"
+	}
+
+	client := &Client{
+		ID:          id,
+		DisplayName: displayName,
+		Conn:        ws,
+		Send:        make(chan []byte),
+	}
 	clients[client] = true
 
 	go client.writePump()
@@ -41,20 +63,29 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			delete(clients, client)
 			break
 		}
-		broadcast <- msg
+
+		message := Message{
+			Sender:    client.DisplayName,
+			Content:   string(msg),
+			Timestamp: time.Now(),
+		}
+		broadcast <- message
 	}
 }
 
-func handleMessages(client *Client) {
+func handleMessages() {
 	for {
 		msg := <-broadcast
 
-		for c := range clients {
+		// Marshal message to JSON
+		jsonMessage, _ := json.Marshal(msg)
+
+		for client := range clients {
 			select {
-			case c.Send <- msg:
+			case client.Send <- jsonMessage:
 			default:
-				close(c.Send)
-				delete(clients, c)
+				close(client.Send)
+				delete(clients, client)
 			}
 		}
 	}
@@ -75,7 +106,7 @@ func main() {
 	http.HandleFunc("/ws", handleConnections)
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 
-	go handleMessages(nil)
+	go handleMessages()
 
 	log.Println("Server started on :8080")
 	err := http.ListenAndServe(":8080", nil)
