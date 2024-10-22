@@ -8,10 +8,16 @@ type Message = {
   timestamp: string;
 };
 
+type ActiveUsersMessage = {
+  type: string;
+  users: string[];
+};
+
 const App: React.FC = () => {
   const [displayName, setDisplayName] = useState<string>("");
   const [connected, setConnected] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [activeUsers, setActiveUsers] = useState<string[]>([]);
   const ws = useRef<WebSocket | null>(null);
 
   const connectToWebSocket = () => {
@@ -26,8 +32,18 @@ const App: React.FC = () => {
     );
 
     ws.current.onmessage = (event: MessageEvent) => {
-      const message: Message = JSON.parse(event.data);
-      setMessages((prevMessages) => [...prevMessages, message]);
+      const data = JSON.parse(event.data);
+      if (data.type === "activeUsers") {
+        // Update active users list
+        setActiveUsers(data.users);
+      } else {
+        const message: Message = {
+          sender: data.sender,
+          content: data.content,
+          timestamp: data.timestamp,
+        };
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
     };
 
     ws.current.onerror = (error) => {
@@ -65,7 +81,20 @@ const App: React.FC = () => {
           </button>
         </div>
       ) : (
-        <Chat messages={messages} sendMessage={sendMessage} />
+        <div className="chat-layout">
+          <Chat messages={messages} sendMessage={sendMessage} />
+          <div className="user-list">
+            <h2>Active Users</h2>
+            <ul>
+              {activeUsers.map((user, index) => (
+                <li key={index}>
+                  <span className="user-dot online"></span>
+                  {user}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -12,6 +12,7 @@ import (
 
 var clients = make(map[*Client]bool)
 var broadcast = make(chan Message)
+var notifyClients = make(chan struct{}) // New channel to notify clients of changes
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -30,6 +31,12 @@ type Message struct {
 	Sender    string    `json:"sender"`
 	Content   string    `json:"content"`
 	Timestamp time.Time `json:"timestamp"`
+}
+
+// ActiveUsersMessage represents the list of active users sent to all clients
+type ActiveUsersMessage struct {
+	Type  string   `json:"type"`  // "activeUsers"
+	Users []string `json:"users"` // List of active display names
 }
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
@@ -54,6 +61,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	clients[client] = true
 
+	go notifyActiveUsers()
 	go client.writePump()
 
 	for {
@@ -61,6 +69,8 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("error: %v", err)
 			delete(clients, client)
+			close(client.Send)
+			go notifyActiveUsers()
 			break
 		}
 
@@ -73,19 +83,45 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func notifyActiveUsers() {
+	notifyClients <- struct{}{} // Notify to trigger the active users broadcast
+}
+
 func handleMessages() {
 	for {
-		msg := <-broadcast
+		select {
+		case msg := <-broadcast:
+			// Marshal message to JSON and send to all clients
+			jsonMessage, _ := json.Marshal(msg)
+			for client := range clients {
+				select {
+				case client.Send <- jsonMessage:
+				default:
+					close(client.Send)
+					delete(clients, client)
+				}
+			}
 
-		// Marshal message to JSON
-		jsonMessage, _ := json.Marshal(msg)
+		case <-notifyClients:
+			// When notified, create the active users list and broadcast to all clients
+			activeUsers := []string{}
+			for client := range clients {
+				activeUsers = append(activeUsers, client.DisplayName)
+			}
 
-		for client := range clients {
-			select {
-			case client.Send <- jsonMessage:
-			default:
-				close(client.Send)
-				delete(clients, client)
+			activeUsersMessage := ActiveUsersMessage{
+				Type:  "activeUsers",
+				Users: activeUsers,
+			}
+			jsonActiveUsers, _ := json.Marshal(activeUsersMessage)
+
+			for client := range clients {
+				select {
+				case client.Send <- jsonActiveUsers:
+				default:
+					close(client.Send)
+					delete(clients, client)
+				}
 			}
 		}
 	}
@@ -94,7 +130,6 @@ func handleMessages() {
 func (client *Client) writePump() {
 	for {
 		msg := <-client.Send
-
 		if err := client.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 			log.Println("write error:", err)
 			return

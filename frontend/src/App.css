@@ -48,3 +48,49 @@ body {
 .button:hover {
   background-color: #303f9f;
 }
+
+.chat-layout {
+  display: flex;
+  width: 80vw;
+  height: 80vh;
+}
+
+.user-list {
+  width: 20%;
+  background-color: #444;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+  margin-left: 20px;
+}
+
+.user-list h2 {
+  color: #f0f0f0;
+  margin-bottom: 10px;
+}
+
+.user-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.user-list li {
+  margin: 10px 0;
+  color: #f0f0f0;
+}
+
+.user-dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.user-dot.online {
+  background-color: #4caf50;
+}
+
+.user-dot.offline {
+  background-color: #f44336;
+}
