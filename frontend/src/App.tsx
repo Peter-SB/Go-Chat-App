@@ -27,8 +27,9 @@ const App: React.FC = () => {
     }
 
     // Connect to WebSocket with displayName as a query parameter
+    const ipAddress = window.location.hostname;
     ws.current = new WebSocket(
-      `ws://localhost:8080/ws?displayName=${encodeURIComponent(displayName)}`
+      `ws://${ipAddress}:8080/ws?displayName=${encodeURIComponent(displayName)}`
     );
 
     ws.current.onmessage = (event: MessageEvent) => {
