@@ -99,6 +99,8 @@ func GetChatHistory() ([]Message, error) {
 		log.Println("No messages found.")
 	}
 
+	log.Printf("Successfully retrieved chat history: %+v", messages)
+
 	return messages, nil
 }
 

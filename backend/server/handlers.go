@@ -53,7 +53,6 @@ func handleClientMessages(client *Client) {
 	defer DeregisterClient(client)
 	for {
 		msg := <-client.Send
-		log.Println(msg)
 		if err := client.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 			log.Println("write error:", err)
 			return
@@ -69,6 +68,7 @@ func GetChatHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "*") // backend and frontend are on different domains or ports, add CORS headers to the backend. Todo: investigate further and fix security issues.
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(messages)
 }

@@ -19,6 +19,44 @@ const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeUsers, setActiveUsers] = useState<string[]>([]);
   const ws = useRef<WebSocket | null>(null);
+  const ipAddress = window.location.hostname;
+
+  // Fetch message history from the /history endpoint
+  const fetchMessageHistory = async () => {
+    try {
+      console.log("Fetching chat history");
+      const response = await fetch(`http://${ipAddress}:8080/history`);
+      if (response.ok) {
+        const history: Message[] = await response.json();
+        console.log(history);
+        setMessages(history);
+      } else {
+        console.error("Failed to fetch message history");
+      }
+    } catch (error) {
+      console.error("Error fetching message history:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch chat history when the component mounts
+    const fetchHistory = async () => {
+      console.log("Fetching Chat History");
+      try {
+        const response = await fetch(`http://${ipAddress}:8080/history`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch chat history");
+        }
+        const history: Message[] = await response.json();
+        console.log(history);
+        setMessages(history);
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+      }
+    };
+
+    fetchHistory();
+  }, []);
 
   const connectToWebSocket = () => {
     if (!displayName) {
@@ -27,7 +65,7 @@ const App: React.FC = () => {
     }
 
     // Connect to WebSocket with displayName as a query parameter
-    const ipAddress = window.location.hostname;
+
     ws.current = new WebSocket(
       `ws://${ipAddress}:8080/ws?displayName=${encodeURIComponent(displayName)}`
     );
