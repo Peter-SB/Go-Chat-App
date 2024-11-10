@@ -28,7 +28,7 @@ func InitDBConnection() {
 	database := os.Getenv("DB_NAME")
 
 	// Create the DSN
-	dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + database
+	dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + database + "?parseTime=true" // parseTime=true option ensures that DATE, DATETIME, and TIMESTAMP types are scanned as time.Time in Go
 
 	// Connect to MySQL
 	for i := 0; i < 10; i++ { // Retry up to 10 times
