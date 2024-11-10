@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
+	"github.com/google/uuid"       // Used for generates unique IDs for clients.
+	"github.com/gorilla/websocket" // Used for managing WebSocket connections
 )
 
-var clients = make(map[*Client]bool)
-var broadcast = make(chan Message)
-var notifyClients = make(chan struct{}) // New channel to notify clients of changes
+var clients = make(map[*Client]bool)    // Map for tracking active connections
+var broadcast = make(chan Message)      // Channel for sending messages between clients.
+var notifyClients = make(chan struct{}) // Channel to notify clients of updates, like changes in the active user list.
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -28,18 +28,20 @@ type Client struct {
 }
 
 type Message struct {
-	Sender    string    `json:"sender"`
+	Sender    string    `json:"sender"` // Struct tags (denoted by ``) to specify JSON field names. These are used when marshaling and unmarshaling Go structs to JSON
 	Content   string    `json:"content"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
 // ActiveUsersMessage represents the list of active users sent to all clients
 type ActiveUsersMessage struct {
-	Type  string   `json:"type"`  // "activeUsers"
+	Type  string   `json:"type"`  // Identifies the message type (e.g., "activeUsers")
 	Users []string `json:"users"` // List of active display names
 }
 
+// handleConnections
 func handleConnections(w http.ResponseWriter, r *http.Request) {
+	// Upgrade the HTTP connection to WebSocket.
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -47,6 +49,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
+	// Create a new Client instance and adds it to the clients map
 	id := uuid.New().String()
 	displayName := r.URL.Query().Get("displayName")
 	if displayName == "" {
@@ -87,6 +90,7 @@ func notifyActiveUsers() {
 	notifyClients <- struct{}{} // Notify to trigger the active users broadcast
 }
 
+// handleMessages listens for messages on the various message channels (such as broadcast/notifyClients).
 func handleMessages() {
 	for {
 		select {
@@ -127,6 +131,7 @@ func handleMessages() {
 	}
 }
 
+// WritePump sends messages to the WebSocket connection.
 func (client *Client) writePump() {
 	for {
 		msg := <-client.Send
