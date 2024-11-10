@@ -1,0 +1,10 @@
+CREATE DATABASE IF NOT EXISTS chatapp;
+
+USE chatapp;
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME NOT NULL
+);
