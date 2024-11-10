@@ -1,6 +1,7 @@
-package app
+package server
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -58,4 +59,16 @@ func handleClientMessages(client *Client) {
 			return
 		}
 	}
+}
+
+// GetChatHistoryHandler gets the users chat history from the db
+func GetChatHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	messages, err := GetChatHistory()
+	if err != nil {
+		http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(messages)
 }

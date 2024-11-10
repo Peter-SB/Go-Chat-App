@@ -1,7 +1,8 @@
-package app
+package server
 
 import (
 	"encoding/json"
+	"log"
 )
 
 // Broadcasting logic file.
@@ -49,7 +50,14 @@ func StartNotifyActiveUsers() {
 	}
 }
 
-// BroadcastMessage sends a message to the broadcast channel.
+// BroadcastMessage sends a message to the broadcast channel when a user sends a chat message.
 func BroadcastMessage(msg Message) {
+	// Save to database
+	err := SaveMessage(msg)
+	if err != nil {
+		log.Printf("Failed to save message to DB: %v", err)
+	}
+
+	// Broadcast to all connected clients
 	broadcast <- msg
 }
