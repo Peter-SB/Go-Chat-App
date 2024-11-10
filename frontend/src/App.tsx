@@ -61,7 +61,12 @@ const App: React.FC = () => {
 
   const sendMessage = (message: string) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(message);
+      const formattedMessage = JSON.stringify({
+        sender: displayName, // Use the current user's display name
+        content: message,
+        timestamp: new Date().toISOString(),
+      });
+      ws.current.send(formattedMessage);
     }
   };
 
