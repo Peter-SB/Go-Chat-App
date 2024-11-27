@@ -28,3 +28,15 @@ type ActiveUsersMessage struct {
 	Type  string   `json:"type"`  // Always "activeUsers"
 	Users []string `json:"users"` // List of active display names
 }
+
+type Login struct {
+	HashedPassword string
+	SessionToken   string
+	CSRFToken      string
+}
+
+type User struct {
+	HashedPassword string
+	UserName       string
+	DisplayName    string
+}

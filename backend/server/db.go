@@ -104,8 +104,7 @@ func GetChatHistory() ([]Message, error) {
 	return messages, nil
 }
 
-// SQL DB Creat Command
-
+// --- SQL DB Create Command ---
 // CREATE DATABASE IF NOT EXISTS chatapp;
 // USE chatapp;
 // CREATE TABLE messages (

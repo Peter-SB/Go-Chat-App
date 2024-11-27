@@ -13,6 +13,11 @@ func main() {
 
 	http.HandleFunc("/ws", server.HandleConnections)
 
+	http.HandleFunc("/register", server.Register)
+	http.HandleFunc("/login", server.LoginUser)
+	http.HandleFunc("/logout", server.LogoutUser)
+	http.HandleFunc("/profile", server.Profile)
+
 	// Launch background processes
 	go server.StartBroadcastListener()
 	go server.StartNotifyActiveUsers()
