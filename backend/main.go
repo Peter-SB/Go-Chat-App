@@ -9,14 +9,8 @@ import (
 // Main: The entry point focused on high-level setup.
 func main() {
 	server.InitDBConnection()
-	http.HandleFunc("/history", server.GetChatHistoryHandler) // New endpoint for chat history
 
-	http.HandleFunc("/ws", server.HandleConnections)
-
-	http.HandleFunc("/register", server.Register)
-	http.HandleFunc("/login", server.LoginUser)
-	http.HandleFunc("/logout", server.LogoutUser)
-	http.HandleFunc("/profile", server.Profile)
+	server.SetupRoutes()
 
 	// Launch background processes
 	go server.StartBroadcastListener()

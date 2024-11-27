@@ -2,8 +2,11 @@ package server
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -102,6 +105,75 @@ func GetChatHistory() ([]Message, error) {
 	log.Printf("Successfully retrieved chat history: %+v", messages)
 
 	return messages, nil
+}
+
+func SaveUser(username, hashedPassword string) error {
+	_, err := db.Exec(
+		"INSERT INTO users (username, hashed_password) VALUES (?, ?)",
+		username, hashedPassword,
+	)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return fmt.Errorf("username already exists: %w", err)
+		}
+		return fmt.Errorf("failed to save user: %w", err)
+	}
+	return nil
+}
+
+func GetUserByUsername(username string) (User, error) {
+	var user User
+	err := db.QueryRow(
+		`SELECT id, username, hashed_password,
+                COALESCE(session_token, '') AS session_token,
+                COALESCE(csrf_token, '') AS csrf_token
+         FROM users WHERE username = ?`,
+		username,
+	).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.SessionToken, &user.CSRFToken)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, fmt.Errorf("user not found: %w", err)
+		}
+		return User{}, fmt.Errorf("failed to retrieve user: %w", err)
+	}
+	return user, nil
+}
+
+func UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error {
+	_, err := db.Exec(
+		"UPDATE users SET session_token = ?, csrf_token = ? WHERE id = ?",
+		sessionToken, csrfToken, userID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update session and CSRF tokens for userID %d: %w", userID, err)
+	}
+	return nil
+}
+
+func ClearSession(userID int) error {
+	_, err := db.Exec(
+		"UPDATE users SET session_token = '', csrf_token = '' WHERE id = ?",
+		userID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to clear session for userID %d: %w", userID, err)
+	}
+	return nil
+}
+
+func GetUserBySessionToken(sessionToken string) (User, error) {
+	var user User
+	err := db.QueryRow(
+		"SELECT id, username, session_token, csrf_token FROM users WHERE session_token = ?",
+		sessionToken,
+	).Scan(&user.ID, &user.Username, &user.SessionToken, &user.CSRFToken)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, fmt.Errorf("session token not found: %w", err)
+		}
+		return User{}, fmt.Errorf("failed to retrieve user by session token: %w", err)
+	}
+	return user, nil
 }
 
 // --- SQL DB Create Command ---

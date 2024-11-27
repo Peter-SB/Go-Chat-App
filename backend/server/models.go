@@ -36,7 +36,9 @@ type Login struct {
 }
 
 type User struct {
+	ID             int
+	Username       string
 	HashedPassword string
-	UserName       string
-	DisplayName    string
+	SessionToken   string
+	CSRFToken      string
 }
