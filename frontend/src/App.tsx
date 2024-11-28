@@ -28,8 +28,13 @@ const App: React.FC = () => {
       const response = await fetch(`http://${ipAddress}:8080/history`);
       if (response.ok) {
         const history: Message[] = await response.json();
-        console.log(history);
-        setMessages(history);
+        if (history === null) {
+          console.log("No chat history available.");
+          setMessages([]); // Set an empty array if the response is null
+        } else {
+          console.log(history);
+          setMessages(history);
+        }
       } else {
         console.error("Failed to fetch message history");
       }
@@ -39,23 +44,7 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // Fetch chat history when the component mounts
-    const fetchHistory = async () => {
-      console.log("Fetching Chat History");
-      try {
-        const response = await fetch(`http://${ipAddress}:8080/history`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch chat history");
-        }
-        const history: Message[] = await response.json();
-        console.log(history);
-        setMessages(history);
-      } catch (error) {
-        console.error("Error loading chat history:", error);
-      }
-    };
-
-    fetchHistory();
+    fetchMessageHistory();
   }, []);
 
   const connectToWebSocket = () => {

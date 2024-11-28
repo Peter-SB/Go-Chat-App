@@ -69,3 +69,10 @@
 .message-button:hover {
   background-color: #303f9f;
 }
+
+.no-messages {
+  text-align: center;
+  color: #999;
+  margin: 20px 0;
+  font-size: 1.2em;
+}

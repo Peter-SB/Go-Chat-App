@@ -26,15 +26,21 @@ const Chat: React.FC<ChatProps> = ({ messages, sendMessage }) => {
   return (
     <div className="chat-container">
       <div className="chatbox">
-        {messages.map((msg, index) => (
-          <div key={index} className="message">
-            <span className="message-sender">{msg.sender}</span>
-            <span className="message-content">{msg.content}</span>
-            <span className="message-timestamp">
-              {new Date(msg.timestamp).toLocaleTimeString()}
-            </span>
+        {messages.length === 0 ? ( // Check if messages array is empty
+          <div className="no-messages">
+            No messages yet. Start the conversation!
           </div>
-        ))}
+        ) : (
+          messages.map((msg, index) => (
+            <div key={index} className="message">
+              <span className="message-sender">{msg.sender}</span>
+              <span className="message-content">{msg.content}</span>
+              <span className="message-timestamp">
+                {new Date(msg.timestamp).toLocaleTimeString()}
+              </span>
+            </div>
+          ))
+        )}
       </div>
       <form className="message-form" onSubmit={handleSubmit}>
         <input
