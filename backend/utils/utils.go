@@ -1,6 +1,7 @@
-package server
+package utils
 
 import (
+	"go-chat-app/models"
 	"net/http"
 	"sync"
 
@@ -9,20 +10,35 @@ import (
 )
 
 var (
-	clients       = make(map[*Client]bool)
-	broadcast     = make(chan Message)
+	clients       = make(map[*models.Client]bool)
+	broadcast     = make(chan models.Message)
 	notifyClients = make(chan struct{})
-	mutex         sync.Mutex // Protects the clients map
+	mutex         sync.Mutex
 )
 
+// GetBroadcastChannel returns the broadcast channel.
+func GetBroadcastChannel() chan models.Message {
+	return broadcast
+}
+
+// GetNotifyClientsChannel returns the notifyClients channel.
+func GetNotifyClientsChannel() chan struct{} {
+	return notifyClients
+}
+
+// GetClients returns a reference to the clients map with the mutex.
+func GetClients() (map[*models.Client]bool, *sync.Mutex) {
+	return clients, &mutex
+}
+
 // MakeClient does the setup of the client object such as name, id, etc.
-func MakeClient(r *http.Request, ws *websocket.Conn) *Client {
+func MakeClient(r *http.Request, ws *websocket.Conn) *models.Client {
 	displayName := r.URL.Query().Get("displayName")
 	if displayName == "" {
 		displayName = "Anonymous"
 	}
 
-	client := &Client{
+	client := &models.Client{
 		ID:          uuid.New().String(),
 		DisplayName: displayName,
 		Conn:        ws,
@@ -32,7 +48,7 @@ func MakeClient(r *http.Request, ws *websocket.Conn) *Client {
 }
 
 // RegisterClient adds a client to the active client pool.
-func RegisterClient(client *Client) {
+func RegisterClient(client *models.Client) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	clients[client] = true
@@ -40,7 +56,7 @@ func RegisterClient(client *Client) {
 }
 
 // DeregisterClient removes a client from the active client pool.
-func DeregisterClient(client *Client) {
+func DeregisterClient(client *models.Client) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	delete(clients, client)

@@ -1,14 +1,21 @@
-package server
+package broadcast
 
 import (
 	"encoding/json"
 	"log"
+
+	"go-chat-app/db"
+	"go-chat-app/models"
+	"go-chat-app/utils"
 )
 
 // Broadcasting logic file.
 
 // StartBroadcastListener listens for chat messages on the broadcast channel and sends them to all connected clients.
 func StartBroadcastListener() {
+	broadcast := utils.GetBroadcastChannel()
+	clients, mutex := utils.GetClients()
+
 	for msg := range broadcast {
 		messageBytes, _ := json.Marshal(msg)
 		mutex.Lock()
@@ -18,7 +25,7 @@ func StartBroadcastListener() {
 			case client.Send <- messageBytes:
 			default:
 				// Remove client if unresponsive
-				DeregisterClient(client)
+				utils.DeregisterClient(client)
 			}
 		}
 		mutex.Unlock()
@@ -27,10 +34,13 @@ func StartBroadcastListener() {
 
 // StartNotifyActiveUsers listens for updates and notifies all clients of the current active user list.
 func StartNotifyActiveUsers() {
-	for range notifyClients {
-		activeUsers := CollectActiveUsers()
+	notifyClients := utils.GetNotifyClientsChannel()
+	clients, mutex := utils.GetClients()
 
-		msg := ActiveUsersMessage{
+	for range notifyClients {
+		activeUsers := utils.CollectActiveUsers()
+
+		msg := models.ActiveUsersMessage{
 			Type:  "activeUsers",
 			Users: activeUsers,
 		}
@@ -43,7 +53,7 @@ func StartNotifyActiveUsers() {
 			case client.Send <- messageBytes:
 			default:
 				// Remove unresponsive client
-				DeregisterClient(client)
+				utils.DeregisterClient(client)
 			}
 		}
 		mutex.Unlock()
@@ -51,13 +61,14 @@ func StartNotifyActiveUsers() {
 }
 
 // BroadcastMessage sends a message to the broadcast channel when a user sends a chat message.
-func BroadcastMessage(msg Message) {
+func BroadcastMessage(msg models.Message) {
 	// Save to database
-	err := SaveMessage(msg)
+	err := db.SaveMessage(msg)
 	if err != nil {
 		log.Printf("Failed to save message to DB: %v", err)
 	}
 
 	// Broadcast to all connected clients
+	broadcast := utils.GetBroadcastChannel()
 	broadcast <- msg
 }

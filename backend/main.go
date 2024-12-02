@@ -1,20 +1,23 @@
 package main
 
 import (
-	"go-chat-app/server"
 	"log"
 	"net/http"
+
+	"go-chat-app/broadcast"
+	"go-chat-app/db"
+	"go-chat-app/routes"
 )
 
 // Main: The entry point focused on high-level setup.
 func main() {
-	server.InitDBConnection()
+	db.InitDBConnection()
 
-	server.SetupRoutes()
+	routes.SetupRoutes()
 
 	// Launch background processes
-	go server.StartBroadcastListener()
-	go server.StartNotifyActiveUsers()
+	go broadcast.StartBroadcastListener()
+	go broadcast.StartNotifyActiveUsers()
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

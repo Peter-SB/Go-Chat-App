@@ -1,9 +1,14 @@
-package server
+package handlers
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"go-chat-app/broadcast"
+	"go-chat-app/db"
+	"go-chat-app/models"
+	"go-chat-app/utils"
 
 	"github.com/gorilla/websocket"
 )
@@ -30,27 +35,27 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	// Create a new Client instance and adds it to the clients map
-	client := MakeClient(r, ws)
-	RegisterClient(client)
+	client := utils.MakeClient(r, ws)
+	utils.RegisterClient(client)
 
 	// Start listening for messages from this client
 	go handleClientMessages(client)
 
 	// Read incoming websocket messages
 	for {
-		var msg Message
+		var msg models.Message
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("WebSocket read error: %v", err)
-			DeregisterClient(client)
+			utils.DeregisterClient(client)
 			break
 		}
-		BroadcastMessage(msg)
+		broadcast.BroadcastMessage(msg)
 	}
 }
 
-func handleClientMessages(client *Client) {
-	defer DeregisterClient(client)
+func handleClientMessages(client *models.Client) {
+	defer utils.DeregisterClient(client)
 	for {
 		msg := <-client.Send
 		if err := client.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
@@ -62,7 +67,7 @@ func handleClientMessages(client *Client) {
 
 // GetChatHistoryHandler gets the users chat history from the db
 func GetChatHistoryHandler(w http.ResponseWriter, r *http.Request) {
-	messages, err := GetChatHistory()
+	messages, err := db.GetChatHistory()
 	if err != nil {
 		http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
 		return

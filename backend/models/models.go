@@ -1,4 +1,4 @@
-package server
+package models
 
 import (
 	"time"
@@ -29,11 +29,11 @@ type ActiveUsersMessage struct {
 	Users []string `json:"users"` // List of active display names
 }
 
-type Login struct {
-	HashedPassword string
-	SessionToken   string
-	CSRFToken      string
-}
+// type Login struct {
+// 	HashedPassword string
+// 	SessionToken   string
+// 	CSRFToken      string
+// }
 
 type User struct {
 	ID             int

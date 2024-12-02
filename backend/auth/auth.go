@@ -1,4 +1,4 @@
-package server
+package auth
 
 import (
 	"crypto/rand"
@@ -9,6 +9,9 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"go-chat-app/db"
+	"go-chat-app/models"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -29,7 +32,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user already exists
-	_, err := GetUserByUsername(username)
+	_, err := db.GetUserByUsername(username)
 	if err == nil {
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
@@ -43,7 +46,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the user to the database
-	err = SaveUser(username, hashedPassword)
+	err = db.SaveUser(username, hashedPassword)
 	if err != nil {
 		http.Error(w, "Error saving user", http.StatusInternalServerError)
 		return
@@ -70,7 +73,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch user from database
-	user, err := GetUserByUsername(username)
+	user, err := db.GetUserByUsername(username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
@@ -120,7 +123,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Update the user's session and CSRF tokens in the database
-	err = UpdateSessionAndCSRF(user.ID, sessionToken, csrfToken)
+	err = db.UpdateSessionAndCSRF(user.ID, sessionToken, csrfToken)
 	if err != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
 		log.Printf("Error updating session: %v", err)
@@ -143,7 +146,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	setCookie(w, "csrf_token", "", false, true)
 
 	// Clear session and CSRF tokens in the database
-	err = ClearSession(user.ID)
+	err = db.ClearSession(user.ID)
 	if err != nil {
 		http.Error(w, "Error clearing session", http.StatusInternalServerError)
 		return
@@ -190,7 +193,7 @@ func generateToken(length int) string {
 	return base64.RawURLEncoding.EncodeToString(bytes)
 }
 
-func authorize(r *http.Request) (*User, error) {
+func authorize(r *http.Request) (*models.User, error) {
 	sessionToken, err := r.Cookie("session_token")
 	if err != nil || sessionToken.Value == "" {
 		log.Printf("Authorization failed: Missing or empty session token. Error: %v", err)
@@ -203,7 +206,7 @@ func authorize(r *http.Request) (*User, error) {
 		return nil, errors.New("missing CSRF token")
 	}
 
-	user, err := GetUserBySessionToken(sessionToken.Value)
+	user, err := db.GetUserBySessionToken(sessionToken.Value)
 	if err != nil {
 		log.Printf("Authorization failed: Unable to fetch user for session token %s. Error: %v", sessionToken.Value, err)
 		return nil, errors.New("unauthorized")

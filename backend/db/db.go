@@ -1,4 +1,4 @@
-package server
+package db
 
 import (
 	"database/sql"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"go-chat-app/models"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -60,7 +62,7 @@ func InitDBConnection() {
 }
 
 // SaveMessage saves a chat message to the database.
-func SaveMessage(msg Message) error {
+func SaveMessage(msg models.Message) error {
 	_, err := db.Exec(
 		"INSERT INTO messages (sender, content, timestamp) VALUES (?, ?, ?)",
 		msg.Sender, msg.Content, msg.Timestamp,
@@ -69,7 +71,7 @@ func SaveMessage(msg Message) error {
 }
 
 // GetChatHistory retrieves historical messages from the database.
-func GetChatHistory() ([]Message, error) {
+func GetChatHistory() ([]models.Message, error) {
 	log.Println("Attempting to get chat history from MySQL database.")
 	rows, err := db.Query("SELECT sender, content, timestamp FROM messages ORDER BY timestamp ASC")
 	if err != nil {
@@ -80,9 +82,9 @@ func GetChatHistory() ([]Message, error) {
 
 	log.Println("MySQL db queried.")
 
-	var messages []Message
+	var messages []models.Message
 	for rows.Next() {
-		var msg Message
+		var msg models.Message
 		err := rows.Scan(&msg.Sender, &msg.Content, &msg.Timestamp)
 		if err != nil {
 			log.Printf("Row scan error: %v", err)
@@ -122,8 +124,8 @@ func SaveUser(username, hashedPassword string) error {
 	return nil
 }
 
-func GetUserByUsername(username string) (User, error) {
-	var user User
+func GetUserByUsername(username string) (models.User, error) {
+	var user models.User
 	err := db.QueryRow(
 		`SELECT id, username, hashed_password,
                 COALESCE(session_token, '') AS session_token,
@@ -133,9 +135,9 @@ func GetUserByUsername(username string) (User, error) {
 	).Scan(&user.ID, &user.Username, &user.HashedPassword, &user.SessionToken, &user.CSRFToken)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, fmt.Errorf("user not found: %w", err)
+			return models.User{}, fmt.Errorf("user not found: %w", err)
 		}
-		return User{}, fmt.Errorf("failed to retrieve user: %w", err)
+		return models.User{}, fmt.Errorf("failed to retrieve user: %w", err)
 	}
 	return user, nil
 }
@@ -162,27 +164,17 @@ func ClearSession(userID int) error {
 	return nil
 }
 
-func GetUserBySessionToken(sessionToken string) (User, error) {
-	var user User
+func GetUserBySessionToken(sessionToken string) (models.User, error) {
+	var user models.User
 	err := db.QueryRow(
 		"SELECT id, username, session_token, csrf_token FROM users WHERE session_token = ?",
 		sessionToken,
 	).Scan(&user.ID, &user.Username, &user.SessionToken, &user.CSRFToken)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, fmt.Errorf("session token not found: %w", err)
+			return models.User{}, fmt.Errorf("session token not found: %w", err)
 		}
-		return User{}, fmt.Errorf("failed to retrieve user by session token: %w", err)
+		return models.User{}, fmt.Errorf("failed to retrieve user by session token: %w", err)
 	}
 	return user, nil
 }
-
-// --- SQL DB Create Command ---
-// CREATE DATABASE IF NOT EXISTS chatapp;
-// USE chatapp;
-// CREATE TABLE messages (
-//     id INT AUTO_INCREMENT PRIMARY KEY,
-//     sender VARCHAR(255) NOT NULL,
-//     content TEXT NOT NULL,
-//     timestamp DATETIME NOT NULL
-// );
