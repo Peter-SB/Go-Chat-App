@@ -68,7 +68,5 @@ func GetChatHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*") // use because backend and frontend are on different ports, so add wildcard CORS headers to the backend. Todo: investigate further and fix security issues.
-	w.Header().Set("Content-Type", "application/json") // use to specify what the response it. Without header, client could lead to incorrect parsing.
 	json.NewEncoder(w).Encode(messages)
 }

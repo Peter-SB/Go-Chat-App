@@ -34,7 +34,8 @@ func InitDBConnection() {
 	dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + database + "?parseTime=true" // parseTime=true option ensures that DATE, DATETIME, and TIMESTAMP types are scanned as time.Time in Go
 
 	// Connect to MySQL
-	for i := 0; i < 10; i++ { // Retry up to 10 times
+	// Retry up to 10 times with 5s wait
+	for i := 0; i < 10; i++ {
 		db, err = sql.Open("mysql", dsn)
 		if err == nil {
 			err = db.Ping()

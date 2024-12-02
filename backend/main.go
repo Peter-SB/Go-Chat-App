@@ -21,3 +21,4 @@ func main() {
 }
 
 // Run Command: `go run main.go`
+// Only Rebuild Backend Container Command: `docker-compose up --build backend`
