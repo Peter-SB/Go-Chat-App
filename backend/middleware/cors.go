@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-// CORS Middleware
+// CORS Middleware for handling cross origin requests
 // This is needed because the back-end and front-end are on different ports
 func CORSMiddleware(allowedOrigins []string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

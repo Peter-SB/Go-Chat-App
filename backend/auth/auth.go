@@ -16,7 +16,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Register(w http.ResponseWriter, r *http.Request) {
+// AuthServiceInterface defines the methods for the authentication service.
+type AuthServiceInterface interface {
+	Register(w http.ResponseWriter, r *http.Request)
+	LoginUser(w http.ResponseWriter, r *http.Request)
+	LogoutUser(w http.ResponseWriter, r *http.Request)
+	Profile(w http.ResponseWriter, r *http.Request)
+	Authorize(r *http.Request) (*models.User, error)
+}
+
+type AuthService struct {
+	db db.DBInterface
+}
+
+func NewAuthService(db db.DBInterface) *AuthService {
+	return &AuthService{db: db}
+}
+
+func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		er := http.StatusMethodNotAllowed
 		http.Error(w, "Invalid method", er)
@@ -32,7 +49,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user already exists
-	_, err := db.GetUserByUsername(username)
+	_, err := a.db.GetUserByUsername(username)
 	if err == nil {
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
@@ -46,7 +63,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the user to the database
-	err = db.SaveUser(username, hashedPassword)
+	err = a.db.SaveUser(username, hashedPassword)
 	if err != nil {
 		http.Error(w, "Error saving user", http.StatusInternalServerError)
 		return
@@ -56,7 +73,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func LoginUser(w http.ResponseWriter, r *http.Request) {
+func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		log.Printf("LoginUser error: invalid request method %s", r.Method)
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -73,7 +90,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch user from database
-	user, err := db.GetUserByUsername(username)
+	user, err := a.db.GetUserByUsername(username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
@@ -123,7 +140,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Update the user's session and CSRF tokens in the database
-	err = db.UpdateSessionAndCSRF(user.ID, sessionToken, csrfToken)
+	err = a.db.UpdateSessionAndCSRF(user.ID, sessionToken, csrfToken)
 	if err != nil {
 		http.Error(w, "Error updating session", http.StatusInternalServerError)
 		log.Printf("Error updating session: %v", err)
@@ -134,19 +151,19 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func LogoutUser(w http.ResponseWriter, r *http.Request) {
-	user, err := authorize(r)
+func (a *AuthService) LogoutUser(w http.ResponseWriter, r *http.Request) {
+	user, err := a.Authorize(r)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// Clear Token Cookies
-	setCookie(w, "session_token", "", true, true)
-	setCookie(w, "csrf_token", "", false, true)
+	a.setCookie(w, "session_token", "", true, true)
+	a.setCookie(w, "csrf_token", "", false, true)
 
 	// Clear session and CSRF tokens in the database
-	err = db.ClearSession(user.ID)
+	err = a.db.ClearSession(user.ID)
 	if err != nil {
 		http.Error(w, "Error clearing session", http.StatusInternalServerError)
 		return
@@ -155,13 +172,13 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Logged out.")
 }
 
-func Profile(w http.ResponseWriter, r *http.Request) {
+func (a *AuthService) Profile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	user, err := authorize(r)
+	user, err := a.Authorize(r)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		log.Printf("Error authorizing session: %v", err)
@@ -193,7 +210,7 @@ func generateToken(length int) string {
 	return base64.RawURLEncoding.EncodeToString(bytes)
 }
 
-func authorize(r *http.Request) (*models.User, error) {
+func (a *AuthService) Authorize(r *http.Request) (*models.User, error) {
 	sessionToken, err := r.Cookie("session_token")
 	if err != nil || sessionToken.Value == "" {
 		log.Printf("Authorization failed: Missing or empty session token. Error: %v", err)
@@ -206,7 +223,7 @@ func authorize(r *http.Request) (*models.User, error) {
 		return nil, errors.New("missing CSRF token")
 	}
 
-	user, err := db.GetUserBySessionToken(sessionToken.Value)
+	user, err := a.db.GetUserBySessionToken(sessionToken.Value)
 	if err != nil {
 		log.Printf("Authorization failed: Unable to fetch user for session token %s. Error: %v", sessionToken.Value, err)
 		return nil, errors.New("unauthorized")
@@ -222,7 +239,7 @@ func authorize(r *http.Request) (*models.User, error) {
 	return &user, nil
 }
 
-func setCookie(w http.ResponseWriter, name, value string, httpOnly, secure bool) {
+func (a *AuthService) setCookie(w http.ResponseWriter, name, value string, httpOnly, secure bool) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
 		Value:    value,

@@ -9,7 +9,14 @@ import (
 	"go-chat-app/utils"
 )
 
+var dbInstance db.DBInterface
+
 // Broadcasting logic file.
+
+// InitBroadcast initialises injected dependencies for use by broadcast listers
+func InitBroadcast(db db.DBInterface) {
+	dbInstance = db
+}
 
 // StartBroadcastListener listens for chat messages on the broadcast channel and sends them to all connected clients.
 func StartBroadcastListener() {
@@ -63,7 +70,7 @@ func StartNotifyActiveUsers() {
 // BroadcastMessage sends a message to the broadcast channel when a user sends a chat message.
 func BroadcastMessage(msg models.Message) {
 	// Save to database
-	err := db.SaveMessage(msg)
+	err := dbInstance.SaveMessage(msg)
 	if err != nil {
 		log.Printf("Failed to save message to DB: %v", err)
 	}

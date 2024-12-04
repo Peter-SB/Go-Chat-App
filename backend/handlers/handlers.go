@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"go-chat-app/broadcast"
-	"go-chat-app/db"
 	"go-chat-app/models"
+	"go-chat-app/services"
 	"go-chat-app/utils"
 
 	"github.com/gorilla/websocket"
@@ -24,36 +24,39 @@ var upgrader = websocket.Upgrader{
 
 // HandleConnections handles when a user connects. It upgrades the HTTP connection to a WebSocket connection,
 // adds the user to the client map, starts listening for messages from the client, and reads incoming websocket messages
-func HandleConnections(w http.ResponseWriter, r *http.Request) {
+func HandleConnections(services *services.Services) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-	// Upgrade the HTTP connection to WebSocket.
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("WebSocket upgrade error: %v", err)
-		return
-	}
-	defer ws.Close()
-
-	// Create a new Client instance and adds it to the clients map
-	client := utils.MakeClient(r, ws)
-	utils.RegisterClient(client)
-
-	// Start listening for messages from this client
-	go handleClientMessages(client)
-
-	// Read incoming websocket messages
-	for {
-		var msg models.Message
-		err := ws.ReadJSON(&msg)
+		// Upgrade the HTTP connection to WebSocket.
+		ws, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Printf("WebSocket read error: %v", err)
-			utils.DeregisterClient(client)
-			break
+			log.Printf("WebSocket upgrade error: %v", err)
+			return
 		}
-		broadcast.BroadcastMessage(msg)
+		defer ws.Close()
+
+		// Create a new Client instance and adds it to the clients map
+		client := utils.MakeClient(r, ws)
+		utils.RegisterClient(client)
+
+		// Start listening for messages from this client
+		go handleClientMessages(client)
+
+		// Read incoming websocket messages
+		for {
+			var msg models.Message
+			err := ws.ReadJSON(&msg)
+			if err != nil {
+				log.Printf("WebSocket read error: %v", err)
+				utils.DeregisterClient(client)
+				break
+			}
+			broadcast.BroadcastMessage(msg)
+		}
 	}
 }
 
+// handleClientMessages goroutine listening for messages from this client
 func handleClientMessages(client *models.Client) {
 	defer utils.DeregisterClient(client)
 	for {
@@ -66,12 +69,14 @@ func handleClientMessages(client *models.Client) {
 }
 
 // GetChatHistoryHandler gets the users chat history from the db
-func GetChatHistoryHandler(w http.ResponseWriter, r *http.Request) {
-	messages, err := db.GetChatHistory()
-	if err != nil {
-		http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
-		return
-	}
+func GetChatHistoryHandler(services *services.Services) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		messages, err := services.DB.GetChatHistory()
+		if err != nil {
+			http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
+			return
+		}
 
-	json.NewEncoder(w).Encode(messages)
+		json.NewEncoder(w).Encode(messages)
+	}
 }

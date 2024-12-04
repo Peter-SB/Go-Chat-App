@@ -5,75 +5,69 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
 	"go-chat-app/models"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 )
 
-var db *sql.DB
+// DBInterface defines database operations.
+// Defines an interface that represents the database operations available. This allows us to decouple the application logic from our specific database implementation making a db switch easier.
+type DBInterface interface {
+	SaveMessage(msg models.Message) error
+	GetChatHistory() ([]models.Message, error)
+	SaveUser(username, hashedPassword string) error
+	GetUserByUsername(username string) (models.User, error)
+	UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error
+	ClearSession(userID int) error
+	GetUserBySessionToken(sessionToken string) (models.User, error)
+}
 
-// InitDBConnection initializes the MySQL database connection.
-func InitDBConnection() {
-	// Load .env file
-	err := godotenv.Load()
+// MySQLDB implements DBInterface (by having the same methods) for a MySQL database.
+// Called wrapper struct or database abstraction struct
+// This encapsulate the database connection (*sql.DB) inside a struct, instead of relying on a global variable.
+// Doing so ensures stateful management of the database connection.
+type MySQLDB struct {
+	db *sql.DB
+}
+
+// NewMySQLDB creates a new instance of MySQLDB with a live mysql database connection.
+func NewMySQLDB(dsn string) (*MySQLDB, error) {
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		return nil, fmt.Errorf("failed to open DB connection: %w", err)
 	}
 
-	// Get environment variables
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	database := os.Getenv("DB_NAME")
-
-	// Create the DSN
-	dsn := user + ":" + password + "@tcp(" + host + ":" + port + ")/" + database + "?parseTime=true" // parseTime=true option ensures that DATE, DATETIME, and TIMESTAMP types are scanned as time.Time in Go
-
-	// Connect to MySQL
 	// Retry up to 10 times with 5s wait
 	for i := 0; i < 10; i++ {
-		db, err = sql.Open("mysql", dsn)
-		if err == nil {
-			err = db.Ping()
-		}
-		if err == nil {
+		if err = db.Ping(); err == nil {
 			break
 		}
 		log.Printf("Failed to connect to database: %v. Retrying in 5 seconds...", err)
 		time.Sleep(5 * time.Second)
 	}
 	if err != nil {
-		log.Fatalf("Could not connect to database after 10 attempts: %v", err)
+		return nil, fmt.Errorf("could not connect to database after 10 attempts: %w", err)
 	}
 
-	// Test the connection
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Failed to ping MySQL: %v", err)
-	}
-
-	log.Println("Connected to MySQL database.")
+	return &MySQLDB{db: db}, nil
 }
 
 // SaveMessage saves a chat message to the database.
-func SaveMessage(msg models.Message) error {
-	_, err := db.Exec(
+func (m *MySQLDB) SaveMessage(msg models.Message) error { // Method receiver used here. m is convention or db
+	_, err := m.db.Exec(
 		"INSERT INTO messages (sender, content, timestamp) VALUES (?, ?, ?)",
 		msg.Sender, msg.Content, msg.Timestamp,
 	)
 	return err
 }
 
-// GetChatHistory retrieves historical messages from the database.
-func GetChatHistory() ([]models.Message, error) {
+// GetChatHistory retrieves chat history messages from the database.
+func (m *MySQLDB) GetChatHistory() ([]models.Message, error) {
 	log.Println("Attempting to get chat history from MySQL database.")
-	rows, err := db.Query("SELECT sender, content, timestamp FROM messages ORDER BY timestamp ASC")
+	rows, err := m.db.Query("SELECT sender, content, timestamp FROM messages ORDER BY timestamp ASC")
 	if err != nil {
 		log.Printf("SQL error: %v", err)
 		return nil, err
@@ -110,8 +104,9 @@ func GetChatHistory() ([]models.Message, error) {
 	return messages, nil
 }
 
-func SaveUser(username, hashedPassword string) error {
-	_, err := db.Exec(
+// SaveUser saves user and security information to the database
+func (m *MySQLDB) SaveUser(username, hashedPassword string) error {
+	_, err := m.db.Exec(
 		"INSERT INTO users (username, hashed_password) VALUES (?, ?)",
 		username, hashedPassword,
 	)
@@ -124,9 +119,10 @@ func SaveUser(username, hashedPassword string) error {
 	return nil
 }
 
-func GetUserByUsername(username string) (models.User, error) {
+// GetUserByUsername will get a user from a username
+func (m *MySQLDB) GetUserByUsername(username string) (models.User, error) {
 	var user models.User
-	err := db.QueryRow(
+	err := m.db.QueryRow(
 		`SELECT id, username, hashed_password,
                 COALESCE(session_token, '') AS session_token,
                 COALESCE(csrf_token, '') AS csrf_token
@@ -142,8 +138,9 @@ func GetUserByUsername(username string) (models.User, error) {
 	return user, nil
 }
 
-func UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error {
-	_, err := db.Exec(
+// UpdateSessionAndCSRF will update he sessions and csrf token information for a given user in the database
+func (m *MySQLDB) UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error {
+	_, err := m.db.Exec(
 		"UPDATE users SET session_token = ?, csrf_token = ? WHERE id = ?",
 		sessionToken, csrfToken, userID,
 	)
@@ -153,8 +150,9 @@ func UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error {
 	return nil
 }
 
-func ClearSession(userID int) error {
-	_, err := db.Exec(
+// ClearSession clears user auth and csrf token data from a user when that sessions ends. e.g when logging out
+func (m *MySQLDB) ClearSession(userID int) error {
+	_, err := m.db.Exec(
 		"UPDATE users SET session_token = '', csrf_token = '' WHERE id = ?",
 		userID,
 	)
@@ -164,9 +162,10 @@ func ClearSession(userID int) error {
 	return nil
 }
 
-func GetUserBySessionToken(sessionToken string) (models.User, error) {
+// Gets a user from their session token
+func (m *MySQLDB) GetUserBySessionToken(sessionToken string) (models.User, error) {
 	var user models.User
-	err := db.QueryRow(
+	err := m.db.QueryRow(
 		"SELECT id, username, session_token, csrf_token FROM users WHERE session_token = ?",
 		sessionToken,
 	).Scan(&user.ID, &user.Username, &user.SessionToken, &user.CSRFToken)
