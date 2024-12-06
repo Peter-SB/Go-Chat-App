@@ -32,8 +32,8 @@ func GetClients() (map[*models.Client]bool, *sync.Mutex) {
 }
 
 // MakeClient does the setup of the client object such as name, id, etc.
-func MakeClient(r *http.Request, ws *websocket.Conn) *models.Client {
-	displayName := r.URL.Query().Get("displayName")
+func MakeClient(r *http.Request, ws *websocket.Conn, user *models.User) *models.Client {
+	displayName := user.Username
 	if displayName == "" {
 		displayName = "Anonymous"
 	}

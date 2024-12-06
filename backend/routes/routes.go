@@ -9,18 +9,13 @@ import (
 )
 
 func SetupRoutes(services *services.Services) {
-	// Define allowed origins for use by cors middleware
-	allowedOrigins := []string{
-		"http://localhost:3000",
-	}
-
-	corsMiddleware := middleware.CORSMiddleware(allowedOrigins)
+	corsMiddleware := middleware.CORSMiddleware()
 
 	http.Handle("/history", corsMiddleware(http.HandlerFunc(handlers.GetChatHistoryHandler(services))))
 	http.Handle("/ws", corsMiddleware(http.HandlerFunc(handlers.HandleConnections(services))))
 
-	http.HandleFunc("/register", services.Auth.Register)
-	http.HandleFunc("/login", services.Auth.LoginUser)
-	http.HandleFunc("/logout", services.Auth.LogoutUser)
-	http.HandleFunc("/profile", services.Auth.Profile)
+	http.Handle("/register", corsMiddleware(http.HandlerFunc(services.Auth.Register)))
+	http.Handle("/login", corsMiddleware(http.HandlerFunc(services.Auth.LoginUser)))
+	http.Handle("/logout", corsMiddleware(http.HandlerFunc(services.Auth.LogoutUser)))
+	http.Handle("/profile", corsMiddleware(http.HandlerFunc(services.Auth.Profile)))
 }

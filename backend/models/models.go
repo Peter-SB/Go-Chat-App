@@ -8,7 +8,7 @@ import (
 
 // Why: Consolidates all shared data structures into a single file, improving discoverability and cohesion.
 
-// Client represents a WebSocket client.
+// Client represents a WebSocket client .
 type Client struct {
 	ID          string
 	DisplayName string
@@ -28,12 +28,6 @@ type ActiveUsersMessage struct {
 	Type  string   `json:"type"`  // Always "activeUsers"
 	Users []string `json:"users"` // List of active display names
 }
-
-// type Login struct {
-// 	HashedPassword string
-// 	SessionToken   string
-// 	CSRFToken      string
-// }
 
 type User struct {
 	ID             int

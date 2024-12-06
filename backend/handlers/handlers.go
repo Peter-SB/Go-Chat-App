@@ -22,10 +22,20 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// HandleConnections handles when a user connects. It upgrades the HTTP connection to a WebSocket connection,
+// HandleConnections handles when a user connects. It authenticates, upgrades the HTTP connection to a WebSocket connection,
 // adds the user to the client map, starts listening for messages from the client, and reads incoming websocket messages
 func HandleConnections(services *services.Services) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Authenticate the user
+		user, err := services.Auth.Authorise(r)
+		if err != nil {
+			log.Printf("Unauthorised WebSocket connection attempt: %v", err)
+			http.Error(w, "Unauthorised", http.StatusUnauthorized)
+			return
+		}
+
+		// Log the authorised user
+		log.Printf("WebSocket connection authorised for user: %s", user.Username)
 
 		// Upgrade the HTTP connection to WebSocket.
 		ws, err := upgrader.Upgrade(w, r, nil)
@@ -36,7 +46,7 @@ func HandleConnections(services *services.Services) http.HandlerFunc {
 		defer ws.Close()
 
 		// Create a new Client instance and adds it to the clients map
-		client := utils.MakeClient(r, ws)
+		client := utils.MakeClient(r, ws, user)
 		utils.RegisterClient(client)
 
 		// Start listening for messages from this client

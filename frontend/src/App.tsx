@@ -14,7 +14,9 @@ type ActiveUsersMessage = {
 };
 
 const App: React.FC = () => {
-  const [displayName, setDisplayName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [csrfToken, setCsrfToken] = useState<string>("");
   const [connected, setConnected] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeUsers, setActiveUsers] = useState<string[]>([]);
@@ -47,16 +49,93 @@ const App: React.FC = () => {
     fetchMessageHistory();
   }, []);
 
-  const connectToWebSocket = () => {
-    if (!displayName) {
+  const handleRegister = async () => {
+    try {
+      const response = await fetch(`http://${ipAddress}:8080/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password }),
+        credentials: "include", // Include cookies for session handling
+      });
+
+      if (response.ok) {
+        alert("Registration successful! Logging you in...");
+        handleLogin(); // Automatically log in after registration
+      } else {
+        const errorText = await response.text();
+        alert(`Registration failed: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("An error occurred during registration.");
+    }
+  };
+
+  const handleLogin = async () => {
+    console.log("logging in");
+    try {
+      const response = await fetch(`http://${ipAddress}:8080/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        alert("Login successful!");
+        const tokenSet = await setCSRFTokenFromCookies();
+        if (tokenSet) {
+          const csrfCookie = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("csrf_token="));
+          const token = csrfCookie ? csrfCookie.split("=")[1] : "";
+          connectToWebSocket(token);
+        } else {
+          alert(
+            "CSRF token could not be retrieved. WebSocket connection aborted."
+          );
+        }
+      } else {
+        const errorText = await response.text();
+        alert(`Login failed: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("An error occurred during login.");
+    }
+  };
+
+  const setCSRFTokenFromCookies = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const csrfCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("csrf_token="));
+      if (csrfCookie) {
+        const token = csrfCookie.split("=")[1];
+        console.log("CSRF Token:", token);
+        setCsrfToken(token);
+        resolve(true);
+      } else {
+        console.error("CSRF token not found in cookies.");
+        resolve(false);
+      }
+    });
+  };
+
+  const connectToWebSocket = (csrfToken: string) => {
+    if (!username) {
       alert("Please enter a display name");
       return;
     }
 
-    // Connect to WebSocket with displayName as a query parameter
+    console.log("CSRF Token:", csrfToken);
+    if (!csrfToken) {
+      alert("Missing CSRF token. Please log in again.");
+      return;
+    }
 
     ws.current = new WebSocket(
-      `ws://${ipAddress}:8080/ws?displayName=${encodeURIComponent(displayName)}`
+      `ws://${ipAddress}:8080/ws?csrf_token=${csrfToken}`
     );
 
     ws.current.onmessage = (event: MessageEvent) => {
@@ -89,7 +168,7 @@ const App: React.FC = () => {
   const sendMessage = (message: string) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       const formattedMessage = JSON.stringify({
-        sender: displayName, // Use the current user's display name
+        sender: username,
         content: message,
         timestamp: new Date().toISOString(),
       });
@@ -104,14 +183,26 @@ const App: React.FC = () => {
           <h1 className="title">Go Chat App</h1>
           <input
             type="text"
-            placeholder="Enter your display name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="input"
           />
-          <button className="button" onClick={connectToWebSocket}>
-            Join Chat
-          </button>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input"
+          />
+          <div className="button-container">
+            <button className="button" onClick={handleLogin}>
+              Login
+            </button>
+            <button className="button" onClick={handleRegister}>
+              Register
+            </button>
+          </div>
         </div>
       ) : (
         <div className="chat-layout">

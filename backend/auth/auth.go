@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"go-chat-app/db"
@@ -22,7 +23,7 @@ type AuthServiceInterface interface {
 	LoginUser(w http.ResponseWriter, r *http.Request)
 	LogoutUser(w http.ResponseWriter, r *http.Request)
 	Profile(w http.ResponseWriter, r *http.Request)
-	Authorize(r *http.Request) (*models.User, error)
+	Authorise(r *http.Request) (*models.User, error)
 }
 
 type AuthService struct {
@@ -42,8 +43,12 @@ func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-	if len(username) < 1 || len(password) < 8 {
+
+	log.Printf("Registering username: %s", username)
+
+	if len(username) < 1 || len(password) < 4 {
 		er := http.StatusNotAcceptable
+		log.Println("Invalid username/password")
 		http.Error(w, "Invalid username/password", er)
 		return
 	}
@@ -51,6 +56,7 @@ func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	// Check if the user already exists
 	_, err := a.db.GetUserByUsername(username)
 	if err == nil {
+		log.Println("User already exists")
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
 	}
@@ -58,13 +64,17 @@ func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	// Hash the password
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
+		log.Println("Error processing password")
 		http.Error(w, "Error processing password", http.StatusInternalServerError)
 		return
 	}
 
+	log.Println("Saving user...")
+
 	// Save the user to the database
 	err = a.db.SaveUser(username, hashedPassword)
 	if err != nil {
+		log.Println("Error saving user")
 		http.Error(w, "Error saving user", http.StatusInternalServerError)
 		return
 	}
@@ -82,6 +92,8 @@ func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+
+	log.Printf("Logging in username: %s", username)
 
 	if username == "" || password == "" {
 		log.Printf("LoginUser error: missing username or password. Username: %s", username)
@@ -152,9 +164,9 @@ func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AuthService) LogoutUser(w http.ResponseWriter, r *http.Request) {
-	user, err := a.Authorize(r)
+	user, err := a.Authorise(r)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "Unauthorised", http.StatusUnauthorized)
 		return
 	}
 
@@ -178,14 +190,14 @@ func (a *AuthService) Profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := a.Authorize(r)
+	user, err := a.Authorise(r)
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "Unauthorised", http.StatusUnauthorized)
 		log.Printf("Error authorizing session: %v", err)
 		return
 	}
 
-	fmt.Fprintf(w, "Authorized, welcome %s", user.Username)
+	fmt.Fprintf(w, "Authorised, welcome %s", user.Username)
 }
 
 func hashPassword(password string) (string, error) {
@@ -210,7 +222,7 @@ func generateToken(length int) string {
 	return base64.RawURLEncoding.EncodeToString(bytes)
 }
 
-func (a *AuthService) Authorize(r *http.Request) (*models.User, error) {
+func (a *AuthService) Authorise(r *http.Request) (*models.User, error) {
 	sessionToken, err := r.Cookie("session_token")
 	if err != nil || sessionToken.Value == "" {
 		log.Printf("Authorization failed: Missing or empty session token. Error: %v", err)
@@ -218,6 +230,17 @@ func (a *AuthService) Authorize(r *http.Request) (*models.User, error) {
 	}
 
 	csrfToken := r.Header.Get("X-CSRF-Token")
+	// If not present in the header, check the query parameter
+	if csrfToken == "" {
+		// Parse the query parameters
+		queryParams, err := url.ParseQuery(r.URL.RawQuery)
+		if err != nil {
+			log.Printf("Invalid query parameters")
+			return nil, errors.New("invalid query parameters")
+		}
+		csrfToken = queryParams.Get("csrf_token")
+	}
+
 	if csrfToken == "" {
 		log.Println("Authorization failed: Missing CSRF token in request header.")
 		return nil, errors.New("missing CSRF token")
@@ -226,13 +249,13 @@ func (a *AuthService) Authorize(r *http.Request) (*models.User, error) {
 	user, err := a.db.GetUserBySessionToken(sessionToken.Value)
 	if err != nil {
 		log.Printf("Authorization failed: Unable to fetch user for session token %s. Error: %v", sessionToken.Value, err)
-		return nil, errors.New("unauthorized")
+		return nil, errors.New("unauthorised")
 	}
 
 	if user.CSRFToken != csrfToken {
 		log.Printf("Authorization failed: CSRF token mismatch for user %s. Expected: %s, Received: %s",
 			user.Username, user.CSRFToken, csrfToken)
-		return nil, errors.New("unauthorized")
+		return nil, errors.New("unauthorised")
 	}
 
 	log.Printf("Authorization successful for user: %s", user.Username)
