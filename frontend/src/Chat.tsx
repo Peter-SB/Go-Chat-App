@@ -10,14 +10,15 @@ type Message = {
 type ChatProps = {
   messages: Message[];
   sendMessage: (message: string) => void;
+  canSend: boolean;
 };
 
-const Chat: React.FC<ChatProps> = ({ messages, sendMessage }) => {
+const Chat: React.FC<ChatProps> = ({ messages, sendMessage, canSend }) => {
   const [message, setMessage] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() !== "") {
+    if (message.trim() !== "" && canSend) {
       sendMessage(message);
       setMessage("");
     }
@@ -26,7 +27,7 @@ const Chat: React.FC<ChatProps> = ({ messages, sendMessage }) => {
   return (
     <div className="chat-container">
       <div className="chatbox">
-        {messages.length === 0 ? ( // Check if messages array is empty
+        {messages.length === 0 ? (
           <div className="no-messages">
             No messages yet. Start the conversation!
           </div>
@@ -45,12 +46,16 @@ const Chat: React.FC<ChatProps> = ({ messages, sendMessage }) => {
       <form className="message-form" onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder={
+            canSend ? "Type a message..." : "Log in to send messages"
+          }
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="message-input"
+          disabled={!canSend}
+          title={!canSend ? "Log in to send messages" : ""}
         />
-        <button type="submit" className="message-button">
+        <button type="submit" className="message-button" disabled={!canSend}>
           Send
         </button>
       </form>

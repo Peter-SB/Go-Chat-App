@@ -70,6 +70,12 @@
   background-color: #303f9f;
 }
 
+.message-button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .no-messages {
   text-align: center;
   color: #999;

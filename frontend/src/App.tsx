@@ -20,6 +20,8 @@ const App: React.FC = () => {
   const [connected, setConnected] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeUsers, setActiveUsers] = useState<string[]>([]);
+  const [showLoginPopup, setShowLoginPopup] = useState<boolean>(true);
+
   const ws = useRef<WebSocket | null>(null);
   const ipAddress = window.location.hostname;
 
@@ -82,7 +84,6 @@ const App: React.FC = () => {
       });
 
       if (response.ok) {
-        alert("Login successful!");
         const tokenSet = await setCSRFTokenFromCookies();
         if (tokenSet) {
           const csrfCookie = document.cookie
@@ -90,6 +91,7 @@ const App: React.FC = () => {
             .find((row) => row.startsWith("csrf_token="));
           const token = csrfCookie ? csrfCookie.split("=")[1] : "";
           connectToWebSocket(token);
+          setShowLoginPopup(false);
         } else {
           alert(
             "CSRF token could not be retrieved. WebSocket connection aborted."
@@ -166,6 +168,11 @@ const App: React.FC = () => {
   };
 
   const sendMessage = (message: string) => {
+    if (!connected) {
+      // If not connected, do nothing (or show a warning)
+      alert("You must be logged in to send messages.");
+      return;
+    }
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       const formattedMessage = JSON.stringify({
         sender: username,
@@ -176,39 +183,26 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleLogin();
+  };
+
   return (
     <div className="App">
-      {!connected ? (
-        <div className="join-container">
-          <h1 className="title">Go Chat App</h1>
-          <input
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="input"
-          />
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="input"
-          />
-          <div className="button-container">
-            <button className="button" onClick={handleLogin}>
-              Login
-            </button>
-            <button className="button" onClick={handleRegister}>
-              Register
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="chat-layout">
-          <Chat messages={messages} sendMessage={sendMessage} />
-          <div className="user-list">
-            <h2>Active Users</h2>
+      <div className="chat-layout">
+        <Chat
+          messages={messages}
+          sendMessage={sendMessage}
+          canSend={connected}
+        />
+        <div className="user-list">
+          <h2>Active Users</h2>
+          {!connected ? (
+            <p className="greyed-out">
+              Only logged in users can see active chat members
+            </p>
+          ) : (
             <ul>
               {activeUsers.map((user, index) => (
                 <li key={index}>
@@ -217,6 +211,49 @@ const App: React.FC = () => {
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Login Popup Overlay */}
+      {!connected && showLoginPopup && (
+        <div className="login-overlay">
+          <div className="login-popup">
+            <button
+              className="close-button"
+              onClick={() => setShowLoginPopup(false)}
+            >
+              X
+            </button>
+            <h1 className="title">Go Chat App</h1>
+            <form onSubmit={handleLoginSubmit}>
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="input"
+              />
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
+              />
+              <div className="button-container">
+                <button type="submit" className="button">
+                  Login
+                </button>
+                <button
+                  type="button"
+                  className="button"
+                  onClick={handleRegister}
+                >
+                  Register
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
