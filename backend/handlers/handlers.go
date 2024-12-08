@@ -79,7 +79,7 @@ func handleClientMessages(client *models.Client) {
 }
 
 // ChatHistoryHandler handles GET or DELETE requests for the chat history endpoint.
-// todo: add paging
+// Todo: Add paging and offsets
 func ChatHistoryHandler(services *services.Services) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
