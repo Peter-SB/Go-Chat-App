@@ -3,24 +3,58 @@ body {
   font-family: "Arial", sans-serif;
   background-color: #2b2b2b;
   color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
   overflow: hidden;
 }
 
 .App {
   text-align: center;
-  width: 90vw;
-  height: 90vh;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar styling */
+.top-bar {
+  width: 100%;
+  background-color: #444;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.top-bar-content {
+  display: flex;
+  align-items: center;
+}
+
+.welcome-text {
+  margin-right: 20px;
+  font-size: 16px;
+  color: #f0f0f0;
+}
+
+.top-bar-button {
+  padding: 8px 16px;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.top-bar-button:hover {
+  background-color: #303f9f;
 }
 
 .chat-layout {
   display: flex;
-  width: 90vw;
-  height: 90vh;
-  padding: 20px;
+  width: 95%;
+  height: 90%;
+  padding: 3%;
   box-sizing: border-box;
 }
 
@@ -61,8 +95,8 @@ body {
   background-color: #4caf50;
 }
 
-.user-dot.offline {
-  background-color: #f44336;
+.greyed-out {
+  color: #999;
 }
 
 /* Login popup overlay */
@@ -137,8 +171,4 @@ body {
 
 .close-button:hover {
   color: #ccc;
-}
-
-.greyed-out {
-  color: #999;
 }

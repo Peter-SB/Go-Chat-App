@@ -79,6 +79,7 @@ func handleClientMessages(client *models.Client) {
 }
 
 // GetChatHistoryHandler gets the users chat history from the db
+// todo: add paging
 func GetChatHistoryHandler(services *services.Services) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		messages, err := services.DB.GetChatHistory()

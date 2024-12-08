@@ -107,6 +107,39 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`http://${ipAddress}:8080/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: new URLSearchParams({ username, password }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Close WebSocket if open
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          ws.current.close();
+        }
+        setConnected(false);
+        setUsername("");
+        setPassword("");
+        setCsrfToken("");
+        setActiveUsers([]);
+        setShowLoginPopup(true);
+      } else {
+        const errorText = await response.text();
+        alert(`Logout failed: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("An error occurred during logout.");
+    }
+  };
+
   const setCSRFTokenFromCookies = async (): Promise<boolean> => {
     return new Promise((resolve) => {
       const csrfCookie = document.cookie
@@ -190,6 +223,28 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
+      {/* Top Bar */}
+      <div className="top-bar">
+        {connected && username ? (
+          <div className="top-bar-content">
+            <span className="welcome-text">Welcome, {username}!</span>
+            <button className="top-bar-button" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        ) : (
+          <div className="top-bar-content">
+            <span className="welcome-text">Not logged in</span>
+            <button
+              className="top-bar-button"
+              onClick={() => setShowLoginPopup(true)}
+            >
+              Login
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="chat-layout">
         <Chat
           messages={messages}
