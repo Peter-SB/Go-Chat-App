@@ -1,0 +1,45 @@
+.top-bar {
+  width: 100%;
+  background-color: #444;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.top-bar-title {
+  font-size: 24px;
+  color: #f0f0f0;
+}
+
+.icon-button:hover {
+  background-color: #303f9f;
+}
+
+.icon-button {
+  width: 30px;
+  height: 30px;
+  background-color: #3f51b5;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  margin-right: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.icon-button i {
+  pointer-events: none;
+}
+
+.icon-button:hover {
+  background-color: #303f9f;
+}
+
+.top-bar-content {
+  display: flex;
+  align-items: center;
+}

@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Chat from "./Chat";
+import TopBar from "./TopBar";
 import "./App.css";
 
 type Message = {
   sender: string;
   content: string;
   timestamp: string;
-};
-
-type ActiveUsersMessage = {
-  type: string;
-  users: string[];
 };
 
 const App: React.FC = () => {
@@ -202,7 +198,6 @@ const App: React.FC = () => {
 
   const sendMessage = (message: string) => {
     if (!connected) {
-      // If not connected, do nothing (or show a warning)
       alert("You must be logged in to send messages.");
       return;
     }
@@ -223,27 +218,12 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      {/* Top Bar */}
-      <div className="top-bar">
-        {connected && username ? (
-          <div className="top-bar-content">
-            <span className="welcome-text">Welcome, {username}!</span>
-            <button className="top-bar-button" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        ) : (
-          <div className="top-bar-content">
-            <span className="welcome-text">Not logged in</span>
-            <button
-              className="top-bar-button"
-              onClick={() => setShowLoginPopup(true)}
-            >
-              Login
-            </button>
-          </div>
-        )}
-      </div>
+      <TopBar
+        connected={connected}
+        username={username}
+        onLoginClick={() => setShowLoginPopup(true)}
+        onLogoutClick={handleLogout}
+      />
 
       <div className="chat-layout">
         <Chat
