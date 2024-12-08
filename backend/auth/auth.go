@@ -36,8 +36,7 @@ func NewAuthService(db db.DBInterface) *AuthService {
 
 func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		er := http.StatusMethodNotAllowed
-		http.Error(w, "Invalid method", er)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -47,16 +46,14 @@ func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Registering username: %s", username)
 
 	if len(username) < 1 || len(password) < 4 {
-		er := http.StatusNotAcceptable
-		log.Println("Invalid username/password")
-		http.Error(w, "Invalid username/password", er)
+		log.Printf("Invalid registration details - username: '%s', password length: %d", username, len(password))
+		http.Error(w, "Invalid username or password (password must be at least 4 characters)", http.StatusNotAcceptable)
 		return
 	}
 
 	// Check if the user already exists
-	_, err := a.db.GetUserByUsername(username)
-	if err == nil {
-		log.Println("User already exists")
+	if _, err := a.db.GetUserByUsername(username); err == nil {
+		log.Printf("Registration failed: username '%s' already exists", username)
 		http.Error(w, "User already exists", http.StatusConflict)
 		return
 	}
@@ -64,7 +61,7 @@ func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	// Hash the password
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
-		log.Println("Error processing password")
+		log.Printf("Failed to hash password for user '%s': %v", username, err)
 		http.Error(w, "Error processing password", http.StatusInternalServerError)
 		return
 	}
@@ -74,13 +71,14 @@ func (a *AuthService) Register(w http.ResponseWriter, r *http.Request) {
 	// Save the user to the database
 	err = a.db.SaveUser(username, hashedPassword)
 	if err != nil {
-		log.Println("Error saving user")
+		log.Printf("Error saving user '%s' to the database: %v", username, err)
 		http.Error(w, "Error saving user", http.StatusInternalServerError)
 		return
 	}
 
 	log.Println("User registered successfully")
 	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("User registered successfully"))
 }
 
 func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +102,7 @@ func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// Fetch user from database
 	user, err := a.db.GetUserByUsername(username)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if !errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 			log.Printf("Login failed: User not found with username '%s'", username)
 		} else {

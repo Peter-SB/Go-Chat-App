@@ -78,16 +78,30 @@ func handleClientMessages(client *models.Client) {
 	}
 }
 
-// GetChatHistoryHandler gets the users chat history from the db
+// ChatHistoryHandler handles GET or DELETE requests for the chat history endpoint.
 // todo: add paging
-func GetChatHistoryHandler(services *services.Services) http.HandlerFunc {
+func ChatHistoryHandler(services *services.Services) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		messages, err := services.DB.GetChatHistory()
-		if err != nil {
-			http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
-			return
-		}
+		switch r.Method {
+		case http.MethodGet:
+			messages, err := services.DB.GetChatHistory()
+			if err != nil {
+				http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(messages)
 
-		json.NewEncoder(w).Encode(messages)
+		case http.MethodDelete:
+			err := services.DB.DeleteAllMessages()
+			if err != nil {
+				http.Error(w, "Failed to delete messages", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 	}
 }

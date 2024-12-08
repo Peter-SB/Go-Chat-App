@@ -18,6 +18,7 @@ import (
 type DBInterface interface {
 	SaveMessage(msg models.Message) error
 	GetChatHistory() ([]models.Message, error)
+	DeleteAllMessages() error
 	SaveUser(username, hashedPassword string) error
 	GetUserByUsername(username string) (models.User, error)
 	UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error
@@ -102,6 +103,15 @@ func (m *MySQLDB) GetChatHistory() ([]models.Message, error) {
 	log.Printf("Successfully retrieved chat history: %+v", messages)
 
 	return messages, nil
+}
+
+// DeleteAllMessages deletes all chat messages from the database
+func (m *MySQLDB) DeleteAllMessages() error {
+	_, err := m.db.Exec("DELETE FROM messages")
+	if err != nil {
+		return fmt.Errorf("failed to delete all messages: %w", err)
+	}
+	return nil
 }
 
 // SaveUser saves user and security information to the database
