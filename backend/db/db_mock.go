@@ -25,7 +25,7 @@ func NewMockDB() *MockDB {
 	}
 }
 
-// SaveMessage stores a chat message in memory.
+// SaveMessage (mock) stores a chat message in memory.
 func (m *MockDB) SaveMessage(msg models.Message) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -38,7 +38,7 @@ func (m *MockDB) SaveMessage(msg models.Message) error {
 	return nil
 }
 
-// GetChatHistory retrieves all stored messages.
+// GetChatHistory (mock) retrieves all stored messages.
 func (m *MockDB) GetChatHistory() ([]models.Message, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -49,7 +49,7 @@ func (m *MockDB) GetChatHistory() ([]models.Message, error) {
 	return history, nil
 }
 
-// DeleteAllMessages clears all messages.
+// DeleteAllMessages (mock) clears all messages.
 func (m *MockDB) DeleteAllMessages() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -58,7 +58,7 @@ func (m *MockDB) DeleteAllMessages() error {
 	return nil
 }
 
-// SaveUser saves a new user if it does not already exist.
+// SaveUser (mock) saves a new user if it does not already exist.
 func (m *MockDB) SaveUser(username, hashedPassword string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -80,7 +80,7 @@ func (m *MockDB) SaveUser(username, hashedPassword string) error {
 	return nil
 }
 
-// GetUserByUsername retrieves a user by username.
+// GetUserByUsername (mock) retrieves a user by username.
 func (m *MockDB) GetUserByUsername(username string) (models.User, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -92,7 +92,7 @@ func (m *MockDB) GetUserByUsername(username string) (models.User, error) {
 	return user, nil
 }
 
-// UpdateSessionAndCSRF updates the session and CSRF token for a given user.
+// UpdateSessionAndCSRF (mock) updates the session and CSRF token for a given user.
 func (m *MockDB) UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -118,7 +118,7 @@ func (m *MockDB) UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string
 	return nil
 }
 
-// ClearSession clears the session and csrf tokens from a user.
+// ClearSession (mock) clears the session and csrf tokens from a user.
 func (m *MockDB) ClearSession(userID int) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -144,7 +144,7 @@ func (m *MockDB) ClearSession(userID int) error {
 	return nil
 }
 
-// GetUserBySessionToken retrieves a user by their session token.
+// GetUserBySessionToken (mock) retrieves a user by their session token.
 func (m *MockDB) GetUserBySessionToken(sessionToken string) (models.User, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

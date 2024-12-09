@@ -12,6 +12,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Tests for the auth service using the mock db
+
 func setupAuthService() (*auth.AuthService, *db.MockDB) {
 	mockDB := db.NewMockDB()
 	return auth.NewAuthService(mockDB), mockDB

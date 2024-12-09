@@ -15,8 +15,6 @@ func CORSMiddleware() func(http.Handler) http.Handler {
 			// Define allowed origins for use by cors middleware
 			allowedOrigins := []string{
 				"http://localhost:3000",
-				"http://localhost:80",
-				"http://backend:3000",
 			}
 
 			origin := r.Header.Get("Origin")

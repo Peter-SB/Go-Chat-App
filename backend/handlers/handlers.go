@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// WebSocket handlers focus on establishing connections and adding clients to the pool.
+// WebSocket handlers focuses on establishing connections and adding clients to the user pool.
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {

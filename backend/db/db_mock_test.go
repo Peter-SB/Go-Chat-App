@@ -8,6 +8,8 @@ import (
 	"go-chat-app/models"
 )
 
+// Test the mock db to ensure its behaving as expected
+
 func TestSaveMessage(t *testing.T) {
 	mockDB := db.NewMockDB()
 	msg := models.Message{

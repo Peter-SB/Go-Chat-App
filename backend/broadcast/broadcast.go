@@ -11,8 +11,6 @@ import (
 
 var dbInstance db.DBInterface
 
-// Broadcasting logic file.
-
 // InitBroadcast initialises injected dependencies for use by broadcast listers
 func InitBroadcast(db db.DBInterface) {
 	dbInstance = db
