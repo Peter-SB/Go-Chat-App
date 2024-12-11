@@ -244,6 +244,7 @@ func (a *AuthService) Authorise(r *http.Request) (*models.User, error) {
 		return nil, errors.New("missing CSRF token")
 	}
 
+	// Use the session token to identify the user.
 	user, err := a.db.GetUserBySessionToken(sessionToken.Value)
 	if err != nil {
 		log.Printf("Authorization failed: Unable to fetch user for session token %s. Error: %v", sessionToken.Value, err)
