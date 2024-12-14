@@ -1,8 +1,8 @@
 # 📜 Project Overview
 
-This is an **instant messaging chat app** made \***\*in part to demonstrate my abilities in full-stack development, and focusing on learning web security concepts as well as practising program architecture and scalability. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database. The app is containerized using **Docker Compose\*\* for repeatable and easy deployment.
+This is an **instant messaging chat app** made in part to demonstrate my abilities in full-stack development, and focusing on learning web security concepts as well as practising program architecture and scalability. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database. The app is containerized using **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement advanced patterns like **dependency injection** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware** for better understanding and hands-on learning. The project is complete with some example mock services and unit tests for demonstraigtion of how to do unit tests in Go.
+I've taken time to implement advanced patterns like **dependency injection** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware** for better understanding and hands-on learning. The project is complete with some example mock services and unit tests for demonstration of how to do unit tests in Go.
 
 # 🚩Features
 
@@ -39,7 +39,7 @@ I've taken time to implement advanced patterns like **dependency injection** for
 - **Postman**: API testing during development.
 - **Git**: Version control for codebase management.
 
-# Screenshots
+# 📸 Screenshots
 
 <p align="center">
   <img src='docs/Screenshot-login.png'  style="width:75%;height:75%;">
@@ -169,18 +169,42 @@ CSRF tokens protect against this by verifying the origin of the request. By send
 
 ### Dependency Injection:
 
-- Explanation
-  - What is it
-  - Why use it? benefits?
-- Explination of Code
-  - explain why using struc
-  - explain how the interface works
-  - explain how Go does object orientations and inheretance
-- benefits
-- Expansions
-  - Repositry pattern for better abstraction and easier testing and new database integration
+This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service.
 
-### Middleware Patern and CORS:
+Dependency Injection is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this IoC by receiving dependencies from an external source rather than creating them internally with the objects code. DI helps improve code maintainability, testability, extendable, and flexibility by abstracting dependencies behind an interface.
+
+In Go, rather than traditional inheritance, object orientation is achieved more through interfaces. While Go lacks class-based inheritance, polymorphism is achieved by defining interfaces and implementing their methods in Go structs. For example, we define a `DBInterface` that specifies the required methods. Any struct that implements these methods can be used interchangeably.
+
+The `MySQLDB` struct acts as a wrapper around the actual database connection. Because it adheres to the `DBInterface`, we can swap or mock functionality without having to change the mySQL implementation.
+
+```go
+type DBInterface interface {
+	SaveMessage(msg models.Message) error
+	GetChatHistory() ([]models.Message, error)
+	DeleteAllMessages() error
+	SaveUser(username, hashedPassword string) error
+	GetUserByUsername(username string) (models.User, error)
+	UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error
+	ClearSession(userID int) error
+	GetUserBySessionToken(sessionToken string) (models.User, error)
+}
+
+type MySQLDB struct {
+	db *sql.DB
+}
+```
+
+**Benefits**:
+
+Testability: Using interfaces for DI makes it easy to replace database or auth implementations with mocks during unit testing. The auth unit tests swap out the mySQL database implementation for a MockDB.
+
+Flexibility: Abstracting dependencies allows you to use different implementations without changing code. This is particularly useful for integrating new services like a database. By decoupling dependencies, DI reduces tight coupling between components, making the codebase easier to maintain and extend.
+
+Separation of Concerns: DI promotes clean architecture by separating the logic of object creation from business logic, adhering to the Single Responsibility Principle (SRP).
+
+This architecture could be further improved with the **Repository Pattern**. This would mean encapsulating our database functionality further by creating another layer of abstraction, decoupling the data access logic from other business logic. This would make testing and new service integration even easier.
+
+### Middleware Pattern and CORS:
 
 Because my backend was on a different port to my frontend, i had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented a Middleware patter t
 
