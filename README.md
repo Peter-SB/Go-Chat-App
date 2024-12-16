@@ -152,7 +152,7 @@ Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for 
 
 ### **Session Authentication and CRFT Tokens**:
 
-As part of this I really enjoyed learning more about session and csrf tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still used a lot and learning about the security vulnerabilities introduced by those and how csrf tokens are secure against that was very interesting.
+As part of this I really enjoyed learning more about session and csrf tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stops these vulnerabilities was particularly interesting to learn.
 
 **Explanation:**
 
@@ -212,7 +212,7 @@ Because my backend was on a different port to my frontend, I had to add Cross-Or
 
 ### Unit Tests:
 
-Unit tests have been written for the auth service and the mock database. I chose to not unit test with full code coverage because I understand unit testing and this project was focused on learning and demonstaighting my abilities, not to build a full product with an actual test suit.
+Unit tests have been written for the auth service and the mock database, however I chose not to aim for full code coverage because the focus was on learning and demonstrating abilities.
 
 In Go, it is est practice is to name test files `_test.go` and put them in the same directory as the code they are testing. This is to make it easy to find the tests and supposedly encourages writing tests alongside the code. It is suggested to use separate directories for integration tests.
 
