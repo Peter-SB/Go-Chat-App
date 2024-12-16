@@ -208,21 +208,21 @@ This architecture could be further improved with the **Repository Pattern**. Thi
 
 ### Middleware Pattern and CORS:
 
-Because my backend was on a different port to my frontend, i had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented a Middleware patter t
+Because my backend was on a different port to my frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented a Middleware pattern to sit between request and application logic to set up headers needed.
 
 ### Unit Tests:
 
-Unit tests have been written for the auth service and the mock database. I chose to not unit test with full code coverage because I understand unit testing, I just wanted practice in Go and the tests are more for demonstration rather than an actual test suit.
+Unit tests have been written for the auth service and the mock database. I chose to not unit test with full code coverage because I understand unit testing and this project was focused on learning and demonstaighting my abilities, not to build a full product with an actual test suit.
 
-Some notes on unit testing in go:
+In Go, it is est practice is to name test files `_test.go` and put them in the same directory as the code they are testing. This is to make it easy to find the tests and supposedly encourages writing tests alongside the code. It is suggested to use separate directories for integration tests.
 
-- Best practice is to place test files (`_test.go`) in the same package and directory as the code they are testing. This makes it easy to find the tests and supposedly encourages writing tests alongside the code. Use separate directories for integration tests.
-- Test functions should be named `TestXxx` where `Xxx` describes the test subject.
-- Use `t.Run` to group related test cases in subtests.
+Within test files is is best practice to name test functions `TestXxx` where `Xxx` describes the test.
+
+Also in Go, you can use `t.Run` to group related test cases in subtests.
 
 ### **DevOps Skills**:
 
-Utilized Docker Compose to create an isolated development environment.
+Utilized Docker Compose for consistent environments and streamlined deployment.
 
 # 🏗️ Further Expansion
 
@@ -267,7 +267,7 @@ Utilized Docker Compose to create an isolated development environment.
 
 ## 🤝 Contact
 
-Feel free to reach out if you have questions about the project or would like to collaborate.
+Please reach out if you have questions, always happy to talk!
 
 - **Email**: peterboughton11@gmail.com
 - **LinkedIn**: [LinkedIn](https://www.linkedin.com/in/peter-semrau-boughton/)
