@@ -1,16 +1,16 @@
-# 📜 Project Overview
+# Project Overview
 
-This is an **instant messaging chat app** made in part to demonstrate my abilities in full-stack development, and focusing on learning web security concepts as well as practising program architecture and scalability. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database. The app is containerized using **Docker Compose** for repeatable and easy deployment.
+This is an **instant messaging chat app** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized using **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement advanced patterns like **dependency injection** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware** for better understanding and hands-on learning. The project is complete with some example mock services and unit tests for demonstration of how to do unit tests in Go.
+I've taken time to implement from scratch advanced patterns like **dependency injection** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go.
 
-# 🚩Features
+# Features
 
 ### Backend (Go)
 
 - WebSockets for Real-Time chat and active user information.
 - **Security Best Practices**:
-  - Session Management and CSRF Protection implemented from scratch for deeper understanding.
+  - Session Management and CSRF Protection implemented from scratch for better understanding.
   - Custom CORS Middleware to handle cross-origin requests.
 - **Architecture**:
   - Dependency Injection for services (database and authentication), allowing easy testing with mock implementations.
@@ -19,7 +19,7 @@ I've taken time to implement advanced patterns like **dependency injection** for
   - MySQL for user authentication and message persistence.
   - Mock database implementations for unit testing.
 - **Testing:**
-  - Demonstration unit tests for authentication and database interactions.
+  - Demonstration unit tests and mocking for database and authentication code.
 
 ### Frontend (React)
 
@@ -28,7 +28,7 @@ I've taken time to implement advanced patterns like **dependency injection** for
 
 ### Database (MySQL)
 
-- Used MySQL for practising implementing SQL despite it being overkill for this project.
+- Used MySQL for practising implementing SQL (despite it being overkill for this project).
 
 ### Docker
 
@@ -39,7 +39,13 @@ I've taken time to implement advanced patterns like **dependency injection** for
 - **Postman**: API testing during development.
 - **Git**: Version control for codebase management.
 
-# 📸 Screenshots
+# Motivation
+
+This project was built as a learning exercise while teaching myself **Go** and exploring full-stack development and best practices for web development.
+
+There are lots of good Go web frameworks such a Gin that handle some of the stuff implemented however the aim was to practice and learn the core concepts. After this I will be better equipped to use frameworks in future now I better understand the underlying mechanics.
+
+# Screenshots
 
 <p align="center">
   <img src='docs/Screenshot-login.png'  style="width:75%;height:75%;">
@@ -52,20 +58,14 @@ I've taken time to implement advanced patterns like **dependency injection** for
   <p align="center"> When a user is logged out they cant connect to the websocket </p> 
 </p>
 
-# 💡 Motivation
-
-This project was built as a learning exercise while teaching myself **Go** and exploring full-stack development and best practices for web development.
-
-There are lots of Go frameworks such a (gin?) that handle some of the stuff implemented such as dependency injection or middleware however that aim was to practice and learn and I will be better equipped to use fraimewoks in future now I better understand the underlying mechanics.
-
-# 📂 Project Structure (Less Important Bits Omitted)
+# Project Structure (Less Important Bits Omitted)
 
 ```
 chat-app/
 ├── backend/
 │   ├── main.go          # Entry point for the Go server
 │   ├── auth/            # Authentication logic
-│   │   ├── auth.go      # Fnctions like Register, LoginUser and utilities for password hashing and token generation
+│   │   ├── auth.go      # Functions like Register, LoginUser and utilities for password hashing and token generation
 │   │   └── auth_test.go # Unit tests for authentication functions
 |   |
 │   ├── broadcast/       # Handles broadcasting and notification of chat messages and active user updates
@@ -100,11 +100,11 @@ chat-app/
 
 ```
 
-# 🧑‍💻 Development Highlights
+# Explanation of Advanced Concepts
 
 ### Websockets:
 
-I first started this project to get more hands on experiance with websockets. Initialy just for the instant messaging comunication, I later expanded this to also communicate active user updates as well.
+I first started this project to get more hands on experience with websockets. Initially just for the instant messaging communication. I later expanded this to also communicate active user updates as well.
 
 At the moment Gorilla/websockets is defacto standard library for websockets in Go.
 
@@ -148,21 +148,21 @@ func BroadcastMessage(msg models.Message) {
 go broadcast.StartBroadcastListener()
 ```
 
-Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for messages on the `broadcast` channel. When a message is received, it is sent to all connected WebSocket clients via their respective `Send` channels. This approach allows the program to handle multiple clients and messages simultaneously without blocking other tasks.
+Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for messages on the `broadcast` channel. When a message is received, it is sent to all connected WebSocket clients via their respective `Send` channels. This allows the program to handle multiple clients and messages simultaneously without blocking other tasks.
 
 ### **Session Authentication and CRFT Tokens**:
 
-As part of this I really enjoyed learning more about session and csrf tokens, and implementing them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still used a lot and learning about the security vulnerabilities introduced by those and how csrf tokens are secure against that was very interesting.
+As part of this I really enjoyed learning more about session and csrf tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still used a lot and learning about the security vulnerabilities introduced by those and how csrf tokens are secure against that was very interesting.
 
 **Explanation:**
 
-The core idea is that a session token is a way of identifying a user for a given period. This token is given to the user as a cookie when they log in and can be used to identify themselves when they make a request (such as connecting to the chat web socket or accessing their profile). benefits?
+The core idea is that a session token is a way of identifying a user for a given period. This token is given to the user as a cookie when they log in and can be used to identify themselves when they make a request (such as connecting to the chat web socket or accessing their profile).
 
-However this can introduce a vulnerability called CSRF (cross sight request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the users knowing.
+However this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the users knowing.
 
 CSRF tokens protect against this by verifying the origin of the request. By sending a user a crsf token when they login, also as a cookie, cross-origin site policy only allowed authorised pages to access the crsf token and attach it as a customer header.
 
-CSRF tokens are not needed everywhere though. The users with session token cookies already are automatically connected to the websocket. The browser needs to know the username to connect however and so the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token however since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
+CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
 
 **Downsides:**
 
@@ -198,11 +198,11 @@ type MySQLDB struct {
 
 **Benefits**:
 
-Testability: Using interfaces for DI makes it easy to replace database or auth implementations with mocks during unit testing. The auth unit tests swap out the mySQL database implementation for a MockDB.
+**Testability**: Using interfaces for DI makes it easy to replace database or auth implementations with mocks during unit testing. The auth unit tests swap out the mySQL database implementation for a MockDB.
 
-Flexibility: Abstracting dependencies allows you to use different implementations without changing code. This is particularly useful for integrating new services like a database. By decoupling dependencies, DI reduces tight coupling between components, making the codebase easier to maintain and extend.
+**Flexibility**: Abstracting dependencies allows you to use different implementations without changing code. This is particularly useful for integrating new services like a database. By decoupling dependencies, DI reduces tight coupling between components, making the codebase easier to maintain and extend.
 
-Separation of Concerns: DI promotes clean architecture by separating the logic of object creation from business logic, adhering to the Single Responsibility Principle (SRP).
+**Separation of Concerns**: DI promotes clean architecture by separating the logic of object creation from business logic, adhering to the Single Responsibility Principle (SRP).
 
 This architecture could be further improved with the **Repository Pattern**. This would mean encapsulating our database functionality further by creating another layer of abstraction, decoupling the data access logic from other business logic. This would make testing and new service integration even easier.
 
@@ -224,22 +224,16 @@ Also in Go, you can use `t.Run` to group related test cases in subtests.
 
 Utilized Docker Compose for consistent environments and streamlined deployment.
 
-# 🏗️ Further Expansion
+# Further Expansion
 
 - Chat paging and offset
 - Repository Pattern: I was investigating other patterns such as using a repository pattern. by doing so I could increased testability of my database code and allow easy integration with out databases. However given the size of the program, and a general less is more mindset in Go, I chose to stop at dependency injection.
 - WebSocket Scalability
 - Rate Limiting and other security measures
 - Implement CI/CD pipelines.
+- Refactor - some files have been become and bit bloated and could do with a refactor if further functionality were going to be added.
 
-## 📊 Results and Insights
-
-- Gained proficiency in **Go** for backend development.
-- Practice integrate **React.js** .
-- Better knowledge of **security best practices** in web development.
-- Practiced **DevOps concepts** with containerized deployment using Docker.
-
-## 🚀 How to Run
+## How to Run
 
 ### Prerequisites
 
@@ -265,10 +259,8 @@ Utilized Docker Compose for consistent environments and streamlined deployment.
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8080
 
-## 🤝 Contact
+## Contact
 
 Please reach out if you have questions, always happy to talk!
 
-- **Email**: peterboughton11@gmail.com
 - **LinkedIn**: [LinkedIn](https://www.linkedin.com/in/peter-semrau-boughton/)
-- **GitHub**: [GitHub](https://github.com/Peter-SB)
