@@ -121,7 +121,7 @@ var broadcast = make(chan models.Message)
 // Example code from broadcast.go
 // Goroutine to listen and handle messages
 func StartBroadcastListener() {
-	broadcast := utils.GetBroadcastChannel() //
+	broadcast := utils.GetBroadcastChannel()
 	clients, mutex := utils.GetClients()
 
 	for msg := range broadcast {
@@ -152,7 +152,7 @@ Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for 
 
 ### **Session Authentication and CRFT Tokens**:
 
-As part of this I really enjoyed learning more about session and csrf tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stops these vulnerabilities was particularly interesting to learn.
+As part of this I really enjoyed learning more about session and CSRF tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stops these vulnerabilities was particularly interesting to learn.
 
 **Explanation:**
 
@@ -160,7 +160,7 @@ The core idea is that a session token is a way of identifying a user for a given
 
 However this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the users knowing.
 
-CSRF tokens protect against this by verifying the origin of the request. By sending a user a crsf token when they login, also as a cookie, cross-origin site policy only allowed authorised pages to access the crsf token and attach it as a customer header.
+CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they login, also as a cookie, cross-origin site policy only allowed authorised pages to access the CSRF token and attach it as a customer header.
 
 CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
 
@@ -196,7 +196,7 @@ type MySQLDB struct {
 }
 ```
 
-**Benefits**:
+**Benefits Of Dependency Injection**:
 
 **Testability**: Using interfaces for DI makes it easy to replace database or auth implementations with mocks during unit testing. The auth unit tests swap out the mySQL database implementation for a MockDB.
 
