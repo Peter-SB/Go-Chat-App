@@ -154,18 +154,20 @@ Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for 
 
 As part of this I really enjoyed learning more about session and csrf tokens, and implementing them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still used a lot and learning about the security vulnerabilities introduced by those and how csrf tokens are secure against that was very interesting.
 
-**Explination:**
+**Explanation:**
 
 The core idea is that a session token is a way of identifying a user for a given period. This token is given to the user as a cookie when they log in and can be used to identify themselves when they make a request (such as connecting to the chat web socket or accessing their profile). benefits?
 
 However this can introduce a vulnerability called CSRF (cross sight request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the users knowing.
 
-CSRF tokens protect against this by verifying the origin of the request. By sending a user a crsf token when they login, also as a cookie, cross-origin site polliciy only allowed authorised pages to access the crsf token and attach it as a customer header.
+CSRF tokens protect against this by verifying the origin of the request. By sending a user a crsf token when they login, also as a cookie, cross-origin site policy only allowed authorised pages to access the crsf token and attach it as a customer header.
+
+CSRF tokens are not needed everywhere though. The users with session token cookies already are automatically connected to the websocket. The browser needs to know the username to connect however and so the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token however since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
 
 **Downsides:**
 
-- highly distributed systems can put a strain on reading session tokens from db.
-- Improper token handling (e.g., storing session tokens insecurely) can lead to vulnerabilities.
+- highly distributed systems can put a strain on reading session tokens from databases if a database read is needed to check tokens for every action.
+- Improper token handling (e.g. storing session tokens wrong) can cause vulnerabilities.
 
 ### Dependency Injection:
 
@@ -210,7 +212,7 @@ Because my backend was on a different port to my frontend, i had to add Cross-Or
 
 ### Unit Tests:
 
-Unit tests have been written for the auth service and the mock database. I chose to not unit test withfull code coverage because I understand unit testing, I just wanted practice in Go and the tests are more for demonstraightion rather than an actual test suit.
+Unit tests have been written for the auth service and the mock database. I chose to not unit test with full code coverage because I understand unit testing, I just wanted practice in Go and the tests are more for demonstration rather than an actual test suit.
 
 Some notes on unit testing in go:
 
