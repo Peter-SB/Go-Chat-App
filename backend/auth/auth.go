@@ -24,6 +24,7 @@ type AuthServiceInterface interface {
 	LogoutUser(w http.ResponseWriter, r *http.Request)
 	Profile(w http.ResponseWriter, r *http.Request)
 	Authorise(r *http.Request) (*models.User, error)
+	SessionCheck(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthService struct {
@@ -123,8 +124,8 @@ func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 	sessionToken := generateToken(32)
 	csrfToken := generateToken(32)
 
-	// Sets the session cookies.
-	// This will be automatically sent by the browser for any requests to our endpoints on the same domain.
+	// Sets the session cookies. (for demonstration and explanation doing it manually here, see set setCookie function at bottom of page too)
+	// This will be automatically sent by the browser to the server for any requests to our endpoints on the same domain.
 	// Hence this introduces CSRF vulnerabilities because the cookie will automatically be sent allowing forged cross-origin requests.
 	// HttpOnly and Secure flags mitigate risks like XSS and data interception.
 	http.SetCookie(w, &http.Cookie{
@@ -259,6 +260,36 @@ func (a *AuthService) Authorise(r *http.Request) (*models.User, error) {
 
 	log.Printf("Authorization successful for user: %s", user.Username)
 	return &user, nil
+}
+
+// SessionCheck checks if the user has valid session tokens
+func (a *AuthService) SessionCheck(w http.ResponseWriter, r *http.Request) {
+	// Get session token
+	sessionCookie, err := r.Cookie("session_token")
+	if err != nil || sessionCookie.Value == "" {
+		log.Printf("Session check failed: Missing session token. Error: %v", err)
+		http.Error(w, "Unauthorised", http.StatusUnauthorized)
+		return
+	}
+
+	// Validate session token
+	user, err := a.db.GetUserBySessionToken(sessionCookie.Value)
+	if err != nil {
+		log.Printf("Session check failed: Invalid session token. Error: %v", err)
+		http.Error(w, "Unauthorised", http.StatusUnauthorized)
+		return
+	}
+
+	// We do not need to valid CSRF tokens since this endpoint doesnt really expose any risk.
+	// CSRF tokens are primarily needed for state-changing operations. This is only a GET endpoint and doesnt modify
+	// any server states or complete any actions on behalf of the user.
+
+	// Return user details
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"username": "%s"}`, user.Username)
+
+	log.Printf("Session check successful for user: %s", user.Username)
 }
 
 func (a *AuthService) setCookie(w http.ResponseWriter, name, value string, httpOnly, secure bool) {

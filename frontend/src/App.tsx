@@ -21,6 +21,42 @@ const App: React.FC = () => {
   const ws = useRef<WebSocket | null>(null);
   const ipAddress = window.location.hostname;
 
+  // Automatically connect the user in if they already have valid session tokens
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch(`http://${ipAddress}:8080/session-check`, {
+          method: "GET",
+          credentials: "include", // This ensures cookies are included
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Session is valid. User:", data.username);
+          setUsername(data.username);
+
+          const tokenSet = await setCSRFTokenFromCookies();
+          if (tokenSet) {
+            const csrfCookie = document.cookie
+              .split("; ")
+              .find((row) => row.startsWith("csrf_token="));
+            const token = csrfCookie ? csrfCookie.split("=")[1] : "";
+            connectToWebSocket(data.username, token);
+            setShowLoginPopup(false);
+          }
+        } else {
+          console.log("Session is invalid. Showing login popup.");
+          setShowLoginPopup(true);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setShowLoginPopup(true);
+      }
+    };
+
+    checkSession();
+  }, []);
+
   // Fetch message history from the /history endpoint
   const fetchMessageHistory = async () => {
     try {
@@ -30,7 +66,7 @@ const App: React.FC = () => {
         const history: Message[] = await response.json();
         if (history === null) {
           console.log("No chat history available.");
-          setMessages([]); // Set an empty array if the response is null
+          setMessages([]); // Set an empty array if the response is null to stop render errors
         } else {
           console.log(history);
           setMessages(history);
@@ -86,7 +122,7 @@ const App: React.FC = () => {
             .split("; ")
             .find((row) => row.startsWith("csrf_token="));
           const token = csrfCookie ? csrfCookie.split("=")[1] : "";
-          connectToWebSocket(token);
+          connectToWebSocket(username, token);
           setShowLoginPopup(false);
         } else {
           alert(
@@ -153,13 +189,12 @@ const App: React.FC = () => {
     });
   };
 
-  const connectToWebSocket = (csrfToken: string) => {
+  const connectToWebSocket = (username: string, csrfToken: string) => {
     if (!username) {
       alert("Please enter a display name");
       return;
     }
 
-    console.log("CSRF Token:", csrfToken);
     if (!csrfToken) {
       alert("Missing CSRF token. Please log in again.");
       return;

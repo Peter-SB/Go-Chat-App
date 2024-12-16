@@ -1,4 +1,4 @@
-# Step 1: Use the official Node.js image to build the React app
+# Use the official Node.js image to build the React app
 FROM node:16 as builder
 
 # Set the working directory inside the container
@@ -16,7 +16,7 @@ COPY . .
 # Build the React application
 RUN npm run build
 
-# Step 2: Use the Nginx image to serve the built React app
+# Use the Nginx image to serve the built React app
 FROM nginx:latest
 
 # Copy the built app from the builder stage

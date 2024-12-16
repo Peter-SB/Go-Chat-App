@@ -177,3 +177,46 @@ func TestProfile_Unauthorised(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusUnauthorized, resp.StatusCode)
 	}
 }
+
+func TestSessionCheck_Success(t *testing.T) {
+	service, mockDB := setupAuthService()
+
+	mockDB.SaveUser("user1", "hashedpassword")
+	mockDB.UpdateSessionAndCSRF(1, "valid-session-token", "valid-csrf-token")
+
+	req := httptest.NewRequest(http.MethodGet, "/session-check", nil)
+	req.AddCookie(&http.Cookie{Name: "session_token", Value: "valid-session-token"})
+
+	w := httptest.NewRecorder()
+
+	service.SessionCheck(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	expectedBody := `{"username": "user1"}`
+	body := w.Body.String()
+	if body != expectedBody {
+		t.Errorf("expected body %s, got %s", expectedBody, body)
+	}
+}
+
+func TestSessionCheck_InvalidSessionToken(t *testing.T) {
+	service, mockDB := setupAuthService()
+
+	mockDB.SaveUser("user1", "hashedpassword")
+
+	req := httptest.NewRequest(http.MethodGet, "/session-check", nil)
+	req.AddCookie(&http.Cookie{Name: "session_token", Value: "invalid-session-token"})
+
+	w := httptest.NewRecorder()
+
+	service.SessionCheck(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected status %d, got %d", http.StatusUnauthorized, resp.StatusCode)
+	}
+}

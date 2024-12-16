@@ -17,5 +17,6 @@ func SetupRoutes(services *services.Services) {
 	http.Handle("/register", corsMiddleware(http.HandlerFunc(services.Auth.Register)))
 	http.Handle("/login", corsMiddleware(http.HandlerFunc(services.Auth.LoginUser)))
 	http.Handle("/logout", corsMiddleware(http.HandlerFunc(services.Auth.LogoutUser)))
+	http.Handle("/session-check", corsMiddleware(http.HandlerFunc(services.Auth.SessionCheck)))
 	http.Handle("/profile", corsMiddleware(http.HandlerFunc(services.Auth.Profile))) // Not used by frontend, just for test/demonstration purposes
 }
