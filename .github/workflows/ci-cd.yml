@@ -20,7 +20,11 @@ jobs:
           go-version: 1.23
 
       - name: Install Dependencies
-        run: go ./backend/mod download
+        run: |
+          cd backend
+          go mod download
 
       - name: Run Unit Tests
-        run: go test ./backend//... -v
+        run: |
+          cd backend
+          go test ./... -v
