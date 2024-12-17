@@ -100,7 +100,7 @@ chat-app/
 
 ```
 
-# Explanation of Advanced Concepts
+# Explanation of Technical Concepts
 
 ### Websockets:
 
@@ -231,7 +231,7 @@ Utilized Docker Compose for consistent environments and streamlined deployment.
 - WebSocket Scalability
 - Rate Limiting and other security measures
 - Implement CI/CD pipelines.
-- Refactor - some files have been become and bit bloated and could do with a refactor if further functionality were going to be added.
+- Refactor - some files have been become a bit bloated and could do with a refactor if further functionality were going to be added.
 
 ## How to Run
 
@@ -244,7 +244,7 @@ Utilized Docker Compose for consistent environments and streamlined deployment.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/chat-app.git
+   git clone https://github.com/Peter-SB/Go-Chat-App
    cd chat-app
    ```
 
