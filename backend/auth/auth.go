@@ -138,14 +138,14 @@ func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Sets the CSRF Token
-	// When the CSRF token is sent back to the server for authentication, the user must explisitly send it in a custom request header.
-	// Because the custom request header (tippicaly called "X-CSRF-Token") is added by the client and not sent automaticaly, Same-Origin
+	// When the CSRF token is sent back to the server for authentication, the user must explicitly send it in a custom request header.
+	// Because the custom request header (typically called "X-CSRF-Token") is added by the client and not sent automatically, Same-Origin
 	// Policy stops malicious websites from accessing this and only we are able to get and attach the csrf-token to the x-csrf-token request header.
 	http.SetCookie(w, &http.Cookie{
 		Name:     "csrf_token",
 		Value:    csrfToken,
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false, // Needs to be accessable client side to be added to request headers
+		HttpOnly: false, // Needs to be accessible client side to be added to request headers
 		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 	})
@@ -158,7 +158,7 @@ func (a *AuthService) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Login Successfull")
+	log.Println("Login Successful")
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -202,7 +202,7 @@ func (a *AuthService) Profile(w http.ResponseWriter, r *http.Request) {
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10) // Cost = 10 means the password is hashed 2^10 times.
 	// This is to slow down any attempt to "hash crack", ie, reverse engineer the password by making guesses and seeing if that matches the hashed password
-	// Note: bcrypt also automaticaly handles salting to protect against prcomputed hash table attacks.
+	// Note: bcrypt also automatically handles salting to protect against precomputed hash table attacks.
 
 	return string(bytes), err
 }

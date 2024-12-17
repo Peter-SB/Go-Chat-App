@@ -30,9 +30,10 @@ I've taken time to implement from scratch advanced patterns like **dependency in
 
 - Used MySQL for practising implementing SQL (despite it being overkill for this project).
 
-### Docker
+### DevOps
 
 - Containerized using **Docker Compose** for easy consistent deployments.
+- **CI/CD Github Action** pipeline for running unit tests, and building and pushing docker images.
 
 ### Tools
 
@@ -102,11 +103,120 @@ chat-app/
 
 # Explanation of Technical Concepts
 
-### Websockets:
+## Object-Oriented Programming Principles and Design Patterns in Go
 
-I first started this project to get more hands on experience with websockets. Initially just for the instant messaging communication. I later expanded this to also communicate active user updates as well.
+While Go is not a pure Object-Oriented Programming language, it does support features that allow an OOP-like design approach. Go doesn't have classes or class-based inheritance, it also doesn't allow method overloading. Despite this, we can achieve similar results using Go’s pragmatic approach to programming.
 
-At the moment Gorilla/websockets is defacto standard library for websockets in Go.
+### Composition-Based Design:
+
+Instead of classes, we can use **structs** to group data fields and even attach methods to structs achieving something similar. That is, instead of a hierarchical inheritance, the focus is on smaller components that are pieced together and built up. This approach allows more flexibility and reusability.
+
+```go
+// User represents a user in the db.
+type User struct {
+	ID             int
+	Username       string
+	HashedPassword string
+	SessionToken   string
+	CSRFToken      string
+}
+```
+
+## Interface-Based Polymorphism:
+
+Without class inheritance, we can then achieve polymorphism by using **interfaces**. These interfaces. similar to a struct, an interface instead groups function. This is a contract of how it will behave and any type that implements these methods “satisfies” the interface and can be used interchangeably.
+
+```go
+// DBInterface defines a contract that all databases must satisfy
+type DBInterface interface {
+	SaveMessage(msg models.Message) error
+	GetChatHistory() ([]models.Message, error)
+	DeleteAllMessages() error
+	SaveUser(username, hashedPassword string) error
+	GetUserByUsername(username string) (models.User, error)
+	UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error
+	ClearSession(userID int) error
+	GetUserBySessionToken(sessionToken string) (models.User, error)
+}
+
+// MySQLDB is a wrapper around the actual database connection
+type MySQLDB struct {
+	db *sql.DB
+}
+
+// SaveMessage saves a chat message to the database.
+func (m *MySQLDB) SaveMessage(msg models.Message) error { // Method receiver used here. "m" is convention or "db"
+	_, err := m.db.Exec(
+		"INSERT INTO messages (sender, content, timestamp) VALUES (?, ?, ?)",
+		msg.Sender, msg.Content, msg.Timestamp,
+	)
+	return err
+}
+
+```
+
+The `MySQLDB` struct acts as a wrapper around the actual database connection. Because it satisfies the `DBInterface`, we can swap or mock functionality without having to change the mySQL implementation.
+
+### Dependency Injection:
+
+This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service. DI is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this by receiving dependencies from an external source rather than creating them internally with the object’s code.
+
+Dependency injection coupled with interface-based polymorphism can be really powerful and help improve code’s maintainability, testability, extendable, and flexibility by abstracting dependencies behind an interface and allowing them to be swapped in and out.
+
+```go
+// Service struct is a container for the services
+type Services struct {
+	DB   db.DBInterface
+	Auth auth.AuthServiceInterface
+}
+
+// ChatHistoryHandler handles GET or DELETE requests for the chat history endpoint.
+// Todo: Add paging and offsets
+func ChatHistoryHandler(services *services.Services) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			messages, err := services.DB.GetChatHistory()
+			if err != nil {
+				http.Error(w, "Failed to retrieve chat history", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(messages)
+
+		case http.MethodDelete:
+			err := services.DB.DeleteAllMessages()
+			if err != nil {
+				http.Error(w, "Failed to delete messages", http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	}
+}
+```
+
+See how the `ChatHistoryHandler` takes a reference to the services container and then returns a function that will later use that reference to interact with the database service. The creating of the services was not handled by the `ChatHistoryHandler`.
+
+**Testing:**
+
+The use of Interfaces and DI for the DB and auth service allows them to be easily tested because any dependencies can be easily swapped out and mocked in unit tests. In our project a mock database has be implemented satisfying the `DBInterface` and is swapped in instead of the mySQL implementation in the auth tests.
+
+```go
+func setupAuthService() (*auth.AuthService, *db.MockDB) {
+	mockDB := db.NewMockDB()
+	return auth.NewAuthService(mockDB), mockDB
+}
+```
+
+This function in the auth tests create a new auth service injected with a mock database for testing purposes.
+
+**Flexibility and Scaleability:**
+
+This is not just possible for tests, but can also allow us to decouple business code from specific database implementations. This gives us flexibility to swap service implementations at a later date. For example, swapping to a different database. This allows scalability by allow services to grow and change without affecting business logic. The approach encourages clean architecture and separation of concerns also.
 
 ### **Concurrency in Go**:
 
@@ -150,6 +260,12 @@ go broadcast.StartBroadcastListener()
 
 Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for messages on the `broadcast` channel. When a message is received, it is sent to all connected WebSocket clients via their respective `Send` channels. This allows the program to handle multiple clients and messages simultaneously without blocking other tasks.
 
+### Websockets:
+
+I first started this project to get more hands on experience with websockets. Initially just for the instant messaging communication. I later expanded this to also communicate active user updates as well.
+
+At the moment Gorilla/websockets is defacto standard library for websockets in Go.
+
 ### **Session Authentication and CRFT Tokens**:
 
 As part of this I really enjoyed learning more about session and CSRF tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stops these vulnerabilities was particularly interesting to learn.
@@ -169,43 +285,6 @@ CSRF tokens are not needed everywhere though. If you load the website and have p
 - highly distributed systems can put a strain on reading session tokens from databases if a database read is needed to check tokens for every action.
 - Improper token handling (e.g. storing session tokens wrong) can cause vulnerabilities.
 
-### Dependency Injection:
-
-This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service.
-
-Dependency Injection is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this IoC by receiving dependencies from an external source rather than creating them internally with the objects code. DI helps improve code maintainability, testability, extendable, and flexibility by abstracting dependencies behind an interface.
-
-In Go, rather than traditional inheritance, object orientation is achieved more through interfaces. While Go lacks class-based inheritance, polymorphism is achieved by defining interfaces and implementing their methods in Go structs. For example, we define a `DBInterface` that specifies the required methods. Any struct that implements these methods can be used interchangeably.
-
-The `MySQLDB` struct acts as a wrapper around the actual database connection. Because it adheres to the `DBInterface`, we can swap or mock functionality without having to change the mySQL implementation.
-
-```go
-type DBInterface interface {
-	SaveMessage(msg models.Message) error
-	GetChatHistory() ([]models.Message, error)
-	DeleteAllMessages() error
-	SaveUser(username, hashedPassword string) error
-	GetUserByUsername(username string) (models.User, error)
-	UpdateSessionAndCSRF(userID int, sessionToken, csrfToken string) error
-	ClearSession(userID int) error
-	GetUserBySessionToken(sessionToken string) (models.User, error)
-}
-
-type MySQLDB struct {
-	db *sql.DB
-}
-```
-
-**Benefits Of Dependency Injection**:
-
-**Testability**: Using interfaces for DI makes it easy to replace database or auth implementations with mocks during unit testing. The auth unit tests swap out the mySQL database implementation for a MockDB.
-
-**Flexibility**: Abstracting dependencies allows you to use different implementations without changing code. This is particularly useful for integrating new services like a database. By decoupling dependencies, DI reduces tight coupling between components, making the codebase easier to maintain and extend.
-
-**Separation of Concerns**: DI promotes clean architecture by separating the logic of object creation from business logic, adhering to the Single Responsibility Principle (SRP).
-
-This architecture could be further improved with the **Repository Pattern**. This would mean encapsulating our database functionality further by creating another layer of abstraction, decoupling the data access logic from other business logic. This would make testing and new service integration even easier.
-
 ### Middleware Pattern and CORS:
 
 Because my backend was on a different port to my frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented a Middleware pattern to sit between request and application logic to set up headers needed.
@@ -220,9 +299,10 @@ Within test files is is best practice to name test functions `TestXxx` where `Xx
 
 Also in Go, you can use `t.Run` to group related test cases in subtests.
 
-### **DevOps Skills**:
+### DevOps Skills:
 
-Utilized Docker Compose for consistent environments and streamlined deployment.
+- Utilized Docker Compose for consistent environments and streamlined deployment.
+- CI/DC Test and Build Pipeline
 
 # Further Expansion
 
