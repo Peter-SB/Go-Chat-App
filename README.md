@@ -2,7 +2,7 @@
 
 This is an **instant messaging chat app** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized using **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement from scratch advanced patterns like **dependency injection** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go.
+I've taken time to implement from scratch advanced patterns like **dependency injection** and **Interface-Based Polymorphism** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go.
 
 # Features
 
@@ -13,7 +13,7 @@ I've taken time to implement from scratch advanced patterns like **dependency in
   - Session Management and CSRF Protection implemented from scratch for better understanding.
   - Custom CORS Middleware to handle cross-origin requests.
 - **Architecture**:
-  - Dependency Injection for services (database and authentication), allowing easy testing with mock implementations.
+  - Dependency Injection and Interface-Based Polymorphism for services (database and authentication), allowing easy testing with mock implementations.
   - Use of Go channels to broadcast messages to notify active users in real time.
 - **Database Integration:**
   - MySQL for user authentication and message persistence.
@@ -109,7 +109,7 @@ While Go is not a pure Object-Oriented Programming language, it does support fea
 
 ### Composition-Based Design:
 
-Instead of classes, we can use **structs** to group data fields and even attach methods to structs achieving something similar. That is, instead of a hierarchical inheritance, the focus is on smaller components that are pieced together and built up. This approach allows more flexibility and reusability.
+Instead of classes, we can use **structs** to group data fields and even attach methods to structs achieving something similar to classes. That is, instead of a hierarchical inheritance, the focus is on smaller components that are pieced together and built up. This approach allows more flexibility and reusability.
 
 ```go
 // User represents a user in the db.
@@ -124,7 +124,7 @@ type User struct {
 
 ## Interface-Based Polymorphism:
 
-Without class inheritance, we can then achieve polymorphism by using **interfaces**. These interfaces. similar to a struct, an interface instead groups function. This is a contract of how it will behave and any type that implements these methods “satisfies” the interface and can be used interchangeably.
+Without class inheritance, we can then achieve polymorphism by using **interfaces**. Similar to a structs, an interface instead groups function. This is a contract of how it will behave and any type that implements these methods “satisfies” the interface and can be used interchangeably.
 
 ```go
 // DBInterface defines a contract that all databases must satisfy
