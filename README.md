@@ -50,13 +50,15 @@ There are lots of good Go web frameworks such a Gin that handle some of the stuf
 
 <p align="center">
   <img src='docs/Screenshot-login.png'  style="width:75%;height:75%;">
+    <p align="center"> Login prompt. Option to close prompt to view history anonymously. </p> 
 </p>
 <p align="center">
   <img src='docs/Screenshot-main.png'  style="width:75%;height:75%;">
+  <p align="center"> Chat screen. Active Users panel displace live information on who's connected. Username and logout option top right. LinkedIn and Github buttons top left (mostly for aesthetics).</p> 
 </p>
 <p align="center">
   <img src='docs/Screenshot-logged-out.png' style="width:75%;height:75%;">
-  <p align="center"> When a user is logged out they cant connect to the websocket </p> 
+  <p align="center"> Logged out view. When a user is logged out they cant connect to the websocket </p> 
 </p>
 
 # Project Structure (Less Important Bits Omitted)
