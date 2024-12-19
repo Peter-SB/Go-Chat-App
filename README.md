@@ -299,10 +299,17 @@ Within test files is is best practice to name test functions `TestXxx` where `Xx
 
 Also in Go, you can use `t.Run` to group related test cases in subtests.
 
-### DevOps Skills:
+### DevOps:
 
-- Utilized Docker Compose for consistent environments and streamlined deployment.
-- CI/DC Test and Build Pipeline
+For simple, and repeatable deployment I have dockerised this project using a compose file to define orchestrate this.
+
+- **Multistage Builds**: Both the front end and backend use a multistage build process to optimise docker image sizes. For example the Go image used is an Alpine image, a light weight version that includes only the necessary executable.
+- **Shared Network**: The services communicate via a Docker bridge network. Defined as `app-network` this is important for us because it makes communication between containers secure and isolated.
+- **Persistent Volume**: A volume is used to allow data persistence. Defined here by `db-data`. Also the mySQL uses a script to define the schema on first run.
+- **Service Dependencies**: The backend service is set to depend on the database (depends_on) to keep proper startup order.
+- **Environment Variables**: A `.env` file is used for a central management of environment variables. Usually this would not get commited but for demonstration it has been kept.
+
+I have also made use of a **Github Actions Ci/CD Pipeline** to run the unit tests and only if that job succeeds, build and push the docker images to my docker hub. In future I would like to also make this pipeline deploy my containers to a home server.
 
 # Further Expansion
 
@@ -310,7 +317,6 @@ Also in Go, you can use `t.Run` to group related test cases in subtests.
 - Repository Pattern: I was investigating other patterns such as using a repository pattern. by doing so I could increased testability of my database code and allow easy integration with out databases. However given the size of the program, and a general less is more mindset in Go, I chose to stop at dependency injection.
 - WebSocket Scalability
 - Rate Limiting and other security measures
-- Implement CI/CD pipelines.
 - Refactor - some files have been become a bit bloated and could do with a refactor if further functionality were going to be added.
 
 ## How to Run
