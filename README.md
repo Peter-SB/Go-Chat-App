@@ -1,25 +1,25 @@
 # Project Overview
 
-This is an **instant messaging chat app** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized using **Docker Compose** for repeatable and easy deployment.
+This project is an **Instant Messaging Chat App** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized amd orchestrate by **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement from scratch advanced patterns like **dependency injection** and **Interface-Based Polymorphism** for modularity, scalability, and ease of testing. I also investigated and implemented security measures such as **session management**, **CSRF tokens**, and custom **CORS middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go.
+I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as an OOP approach to using Go. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
 
 # Features
 
 ### Backend (Go)
 
-- WebSockets for Real-Time chat and active user information.
+- **WebSockets** for Real-Time chat and active user information.
 - **Security Best Practices**:
-  - Session Management and CSRF Protection implemented from scratch for better understanding.
+  - Session Management and CSRF Protection. Implemented from scratch for better understanding.
   - Custom CORS Middleware to handle cross-origin requests.
 - **Architecture**:
-  - Dependency Injection and Interface-Based Polymorphism for services (database and authentication), allowing easy testing with mock implementations.
+  - Discussion and explanation of Patterns and OOP in Go. Dependency Injection and Interface-Based Polymorphism for services (database and authentication), allowing easy testing with mock implementations.
   - Use of Go channels to broadcast messages to notify active users in real time.
 - **Database Integration:**
   - MySQL for user authentication and message persistence.
-  - Mock database implementations for unit testing.
 - **Testing:**
-  - Demonstration unit tests and mocking for database and authentication code.
+  - Mock database implementations for unit testing.
+  - Demonstration unit tests.
 
 ### Frontend (React)
 
@@ -38,7 +38,7 @@ I've taken time to implement from scratch advanced patterns like **dependency in
 ### Tools
 
 - **Postman**: API testing during development.
-- **Git**: Version control for codebase management.
+- **Git**: Version control.
 
 # Motivation
 
@@ -50,15 +50,15 @@ There are lots of good Go web frameworks such a Gin that handle some of the stuf
 
 <p align="center">
   <img src='docs/Screenshot-login.png'  style="width:75%;height:75%;">
-    <p align="center"> Login prompt. Option to close prompt to view history anonymously. </p> 
+    <p align="center"> Login Prompt. Option to close prompt to view history anonymously. </p> 
 </p>
 <p align="center">
   <img src='docs/Screenshot-main.png'  style="width:75%;height:75%;">
-  <p align="center"> Chat screen. Active Users panel displace live information on who's connected. Username and logout option top right. LinkedIn and Github buttons top left (mostly for aesthetics).</p> 
+  <p align="center"> Chat Screen. Active Users panel displace live information on who's connected. Username and logout option top right. LinkedIn and Github buttons top left (mostly for aesthetics).</p> 
 </p>
 <p align="center">
   <img src='docs/Screenshot-logged-out.png' style="width:75%;height:75%;">
-  <p align="center"> Logged out view. When a user is logged out they cant connect to the websocket </p> 
+  <p align="center"> Logged Out View. When a user is logged out they cant connect to the websocket </p> 
 </p>
 
 # Project Structure (Less Important Bits Omitted)
@@ -303,7 +303,7 @@ Also in Go, you can use `t.Run` to group related test cases in subtests.
 
 ### DevOps:
 
-For simple, and repeatable deployment I have dockerised this project using a compose file to define orchestrate this.
+For simple, and repeatable deployment I have dockerised this project using a compose file to orchestrate the frontend, backend, and db containers.
 
 - **Multistage Builds**: Both the front end and backend use a multistage build process to optimise docker image sizes. For example the Go image used is an Alpine image, a light weight version that includes only the necessary executable.
 - **Shared Network**: The services communicate via a Docker bridge network. Defined as `app-network` this is important for us because it makes communication between containers secure and isolated.
