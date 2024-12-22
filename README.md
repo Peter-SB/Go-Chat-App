@@ -1,8 +1,8 @@
 # Project Overview
 
-This project is an **Instant Messaging Chat App** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized amd orchestrate by **Docker Compose** for repeatable and easy deployment.
+This project is an **Instant Messaging Chat App** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized and orchestrate by **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go an OOP manor. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
+I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go in an OOP manor. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
 
 # Features
 
