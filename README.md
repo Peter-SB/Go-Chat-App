@@ -2,7 +2,7 @@
 
 This project is an **Instant Messaging Chat App** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized amd orchestrate by **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as an OOP approach to using Go. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
+I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go an OOP manor. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
 
 # Features
 
@@ -276,9 +276,11 @@ As part of this I really enjoyed learning more about session and CSRF tokens, an
 
 The core idea is that a session token is a way of identifying a user for a given period. This token is given to the user as a cookie when they log in and can be used to identify themselves when they make a request (such as connecting to the chat web socket or accessing their profile).
 
-However this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the users knowing.
+However, this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the user's knowing.
 
-CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they login, also as a cookie, cross-origin site policy only allowed authorised pages to access the CSRF token and attach it as a customer header.
+CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they login, also as a cookie, Cross-origin resource sharing policy only allowed authorised pages to access the CSRF token and attach it as a customer header.
+
+For example: You get tricked into clicking a doggy link. The malicious website then sends a request on your behalf to bank.com to transfer funds. Because you had already logged into bank.com earlier, you still have a session cookie which will automatically be sent by your browser with the fraudulent request. However, the malicious websites can't access the content of another site's cookie with the correct same/cross origin policy. Only the original site can access that cookie data and manually attach it to the request headers, identifying the request as comming from an authorised origin.  
 
 CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
 
@@ -315,11 +317,10 @@ I have also made use of a **Github Actions Ci/CD Pipeline** to run the unit test
 
 # Further Expansion
 
-- Chat paging and offset
-- Repository Pattern: I was investigating other patterns such as using a repository pattern. by doing so I could increased testability of my database code and allow easy integration with out databases. However given the size of the program, and a general less is more mindset in Go, I chose to stop at dependency injection.
-- WebSocket Scalability
-- Rate Limiting and other security measures
-- Refactor - some files have been become a bit bloated and could do with a refactor if further functionality were going to be added.
+- **Chat Paging and Offseting**: By adding paging and offsetting to the history endpoint we cand reduce the amount of data returned in the request.
+- **Rate Limiting**: This would protect the website from brute force and denial of service attacks.
+- **Repository Pattern**: I was investigating other patterns such as using a repository pattern. By implementing this I could increase the testability of my database code and allow easy integration with other databases. However given the size of the program, and a general "less is more" mindset of Go, I chose not to go this far.
+- **General Refactor:** - Some files have become a bit bloated and could do with a refactor if further functionality were going to be added.
 
 ## How to Run
 
