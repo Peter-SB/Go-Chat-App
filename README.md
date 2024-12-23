@@ -334,13 +334,12 @@ I have also made use of a **Github Actions Ci/CD Pipeline** to run the unit test
 
    ```bash
    git clone https://github.com/Peter-SB/Go-Chat-App
-   cd chat-app
+   cd Go-Chat-App
    ```
 
 2. Start the application using Docker Compose:
 
    ```bash
-   Copy code
    docker-compose up --build
    ```
 
