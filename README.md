@@ -2,7 +2,38 @@
 
 This project is an **Instant Messaging Chat App** made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized amd orchestrate by **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go an OOP manor. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
+I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go in an OOP manner. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
+
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+# Table of Contents
+
+- [Project Overview](#project-overview)
+- [Features](#features)
+    * [Backend (Go)](#backend-go)
+    * [Frontend (React)](#frontend-react)
+    * [Database (MySQL)](#database-mysql)
+    * [DevOps](#devops)
+    * [Tools](#tools)
+- [Motivation](#motivation)
+- [Screenshots](#screenshots)
+- [Project Structure (Trivial Sections Omitted)](#project-structure-trivial-sections-omitted)
+- [Explanation of Technical Concepts](#explanation-of-technical-concepts)
+   * [Object-Oriented Programming Principles and Design Patterns in Go](#object-oriented-programming-principles-and-design-patterns-in-go)
+      + [Composition-Based Design:](#composition-based-design)
+   * [Interface-Based Polymorphism:](#interface-based-polymorphism)
+      + [Dependency Injection:](#dependency-injection)
+      + [Concurrency in Go:](#concurrency-in-go)
+      + [Websockets:](#websockets)
+      + [Session Authentication and CSRF Tokens:](#session-authentication-and-csrf-tokens)
+      + [Middleware Pattern and CORS:](#middleware-pattern-and-cors)
+      + [Unit Tests:](#unit-tests)
+      + [DevOps:](#devops-1)
+- [Further Expansion](#further-expansion)
+- [How to Run](#how-to-run)
+- [Contact](#contact)
+
+<!-- TOC end -->
 
 # Features
 
@@ -58,10 +89,10 @@ There are lots of good Go web frameworks such a Gin that handle some of the stuf
 </p>
 <p align="center">
   <img src='docs/Screenshot-logged-out.png' style="width:75%;height:75%;">
-  <p align="center"> Logged Out View. When a user is logged out they cant connect to the websocket </p> 
+  <p align="center"> Logged Out View. When a user is logged out they cant connect to the Websocket </p> 
 </p>
 
-# Project Structure (Less Important Bits Omitted)
+# Project Structure (Trivial Sections Omitted)
 
 ```
 chat-app/
@@ -126,7 +157,7 @@ type User struct {
 
 ## Interface-Based Polymorphism:
 
-Without class inheritance, we can then achieve polymorphism by using **interfaces**. Similar to a structs, an interface instead groups function. This is a contract of how it will behave and any type that implements these methods “satisfies” the interface and can be used interchangeably.
+Without class inheritance, we can then achieve polymorphism by using **interfaces**. An interface defines a set of method signatures. This is a contract of how it will behave and any type that implements these methods “satisfies” the interface and can be used interchangeably. This approach allows for flexible and decoupled code.
 
 ```go
 // DBInterface defines a contract that all databases must satisfy
@@ -161,7 +192,7 @@ The `MySQLDB` struct acts as a wrapper around the actual database connection. 
 
 ### Dependency Injection:
 
-This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service. DI is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this by receiving dependencies from an external source rather than creating them internally with the object’s code.
+This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service. DI is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this by receiving dependencies from an external source rather than creating them internally with the object’s code. While Go doesn't have a DI framework by default, but can be done by passing dependencies as function arguments, or sturct embedding.
 
 Dependency injection coupled with interface-based polymorphism can be really powerful and help improve code’s maintainability, testability, extendable, and flexibility by abstracting dependencies behind an interface and allowing them to be swapped in and out.
 
@@ -220,7 +251,7 @@ This function in the auth tests create a new auth service injected with a mock d
 
 This is not just possible for tests, but can also allow us to decouple business code from specific database implementations. This gives us flexibility to swap service implementations at a later date. For example, swapping to a different database. This allows scalability by allow services to grow and change without affecting business logic. The approach encourages clean architecture and separation of concerns also.
 
-### **Concurrency in Go**:
+### Concurrency in Go:
 
 This program uses concurrency by making use of Go’s Goroutines, channels, and mutex to handle tasks that can run independently and in parallel. Goroutines are lightweight threads managed by Go's runtime, allowing us to execute multiple tasks at the same time. Channels provide a way for Goroutines to communicate safely, ensuring data consistency and avoiding race conditions. Mutexes (mutual exclusions) ensure safe access to shared resources
 
@@ -264,11 +295,27 @@ Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for 
 
 ### Websockets:
 
-I first started this project to get more hands on experience with websockets. Initially just for the instant messaging communication. I later expanded this to also communicate active user updates as well.
+I first started this project to get more hands on experience with Websockets. Initially just for the instant messaging communication. I later expanded this to also communicate active user updates as well. It’s often considered the de facto standard, even though it isn’t part of the official net/http library.
 
-At the moment Gorilla/websockets is defacto standard library for websockets in Go.
+```go
+// HandleConnections handles when a user connects. It authenticates, upgrades the HTTP connection to a WebSocket connection,
+// adds the user to the client map, starts listening for messages from the client, and reads incoming websocket messages
+func HandleConnections(services *services.Services) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Authenticate the user
+		...
 
-### **Session Authentication and CRFT Tokens**:
+		// Upgrade the HTTP connection to WebSocket.
+		ws, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Printf("WebSocket upgrade error: %v", err)
+			return
+		}
+		defer ws.Close() // This will close the websocket later when done
+
+```
+
+### Session Authentication and CSRF Tokens:
 
 As part of this I really enjoyed learning more about session and CSRF tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stops these vulnerabilities was particularly interesting to learn.
 
@@ -278,11 +325,11 @@ The core idea is that a session token is a way of identifying a user for a given
 
 However, this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the user's knowing.
 
-CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they login, also as a cookie, Cross-origin resource sharing policy only allowed authorised pages to access the CSRF token and attach it as a customer header.
+CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they login, also as a cookie, Same-origin polic only allows authorised pages to access the CSRF token and attach it as a customer header.
 
-For example: You get tricked into clicking a doggy link. The malicious website then sends a request on your behalf to bank.com to transfer funds. Because you had already logged into bank.com earlier, you still have a session cookie which will automatically be sent by your browser with the fraudulent request. However, the malicious websites can't access the content of another site's cookie with the correct same/cross origin policy. Only the original site can access that cookie data and manually attach it to the request headers, identifying the request as comming from an authorised origin.  
+**For Example**: You get tricked into clicking a dodgy link. The malicious website then sends a request on your behalf to bank.com to transfer funds. Because you had already logged into bank.com earlier, you still have a session cookie which will automatically be sent by your browser with the fraudulent request. However, the malicious websites can't access the content of another site's cookie with the correct same/cross origin policy. Only the original site can access that cookie data and manually attach it to the request headers, identifying the request as coming from an authorised origin.  
 
-CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
+CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the Websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
 
 **Downsides:**
 
@@ -291,7 +338,13 @@ CSRF tokens are not needed everywhere though. If you load the website and have p
 
 ### Middleware Pattern and CORS:
 
-Because my backend was on a different port to my frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented a Middleware pattern to sit between request and application logic to set up headers needed.
+Because my backend was on a different port to my frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented the Middleware pattern to sit between request and application logic to set up headers needed. 
+
+This is typicaly done in Go by wrapping the `http.Handler` in or using a handler function. E.g:
+``` go
+http.Handle("/login", corsMiddleware(http.HandlerFunc(services.Auth.LoginUser)))
+
+``` 
 
 ### Unit Tests:
 
@@ -347,7 +400,7 @@ I have also made use of a **Github Actions Ci/CD Pipeline** to run the unit test
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8080
 
-## Contact
+# Contact
 
 Please reach out if you have questions, always happy to talk!
 
