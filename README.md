@@ -9,6 +9,7 @@ I've taken time to implement and explain patterns like **Dependency Injection** 
 # Table of Contents
 
 - [Project Overview](#project-overview)
+- [Table of Contents](#table-of-contents)
 - [Features](#features)
     * [Backend (Go)](#backend-go)
     * [Frontend (React)](#frontend-react)
