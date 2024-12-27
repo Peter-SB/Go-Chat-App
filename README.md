@@ -401,6 +401,10 @@ I have also made use of a **Github Actions Ci/CD Pipeline** to run the unit test
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8080
 
+### Troubleshooting
+
+If you are experiencing CSRF Token issues this could be due to the cookie settings. If you are using HTTP instead of HTTPS, try set `Secure` to false in the Go auth cookie code.
+
 # Contact
 
 Please reach out if you have questions, always happy to talk!
