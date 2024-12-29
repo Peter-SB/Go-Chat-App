@@ -22,14 +22,14 @@ I've taken time to implement and explain patterns like **Dependency Injection** 
 - [Explanation of Technical Concepts](#explanation-of-technical-concepts)
    * [Object-Oriented Programming Principles and Design Patterns in Go](#object-oriented-programming-principles-and-design-patterns-in-go)
       + [Composition-Based Design:](#composition-based-design)
-   * [Interface-Based Polymorphism:](#interface-based-polymorphism)
-      + [Dependency Injection:](#dependency-injection)
-      + [Concurrency in Go:](#concurrency-in-go)
-      + [Websockets:](#websockets)
-      + [Session Authentication and CSRF Tokens:](#session-authentication-and-csrf-tokens)
-      + [Middleware Pattern and CORS:](#middleware-pattern-and-cors)
-      + [Unit Tests:](#unit-tests)
-      + [DevOps:](#devops-1)
+   	  + [Interface-Based Polymorphism:](#interface-based-polymorphism)
+   	  + [Dependency Injection:](#dependency-injection)
+   * [Concurrency in Go:](#concurrency-in-go)
+   * [Websockets:](#websockets)
+   * [Session Authentication and CSRF Tokens:](#session-authentication-and-csrf-tokens)
+	* [Middleware Pattern and CORS:](#middleware-pattern-and-cors)
+	* [Unit Tests:](#unit-tests)
+	* [DevOps:](#devops-1)
 - [Further Expansion](#further-expansion)
 - [How to Run](#how-to-run)
 - [Contact](#contact)
@@ -156,7 +156,7 @@ type User struct {
 }
 ```
 
-## Interface-Based Polymorphism:
+### Interface-Based Polymorphism:
 
 Without class inheritance, we can then achieve polymorphism by using **interfaces**. An interface defines a set of method signatures. This is a contract of how it will behave and any type that implements these methods “satisfies” the interface and can be used interchangeably. This approach allows for flexible and decoupled code.
 
@@ -252,7 +252,7 @@ This function in the auth tests creates a new auth service injected with a mock 
 
 This is not just possible for tests, but can also allow us to decouple business code from specific database implementations. This gives us flexibility to swap service implementations at a later date. For example, swapping to a different database. This allows scalability by allowing services to grow and change without affecting business logic. This approach also encourages clean architecture and separation of concerns.
 
-### Concurrency in Go:
+## Concurrency in Go:
 
 This program uses concurrency by making use of Go’s Goroutines, Channels, and Mutex to handle tasks that can run independently and in parallel. Goroutines are lightweight threads managed by Go's runtime, allowing us to execute multiple tasks at the same time. Channels provide a way for Goroutines to communicate safely, ensuring data consistency and avoiding race conditions. Mutexes (mutual exclusions) ensure safe access to shared resources.
 
@@ -294,7 +294,7 @@ go broadcast.StartBroadcastListener()
 
 Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for messages on the `broadcast` channel. When a message is received, it is sent to all connected WebSocket clients via their respective `Send` channels. This allows the program to handle multiple clients and messages simultaneously without blocking other tasks.
 
-### Websockets:
+## Websockets:
 
 I first started this project to get more hands-on experience with Websockets. Initially, websockets were implemented just for the instant messaging communication. I later expanded this to also communicate active user updates. `gorilla/websocket` is often considered the de facto standard, even though it isn’t part of the official net/http library.
 
@@ -316,7 +316,7 @@ func HandleConnections(services *services.Services) http.HandlerFunc {
 
 ```
 
-### Session Authentication and CSRF Tokens:
+## Session Authentication and CSRF Tokens:
 
 As part of this project I really enjoyed learning more about Session and CSRF Tokens, and implementing them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stop these vulnerabilities was particularly interesting to learn.
 
@@ -337,7 +337,7 @@ CSRF tokens are not needed everywhere though. If you load the website and have p
 - Highly distributed systems can put a strain on reading session tokens from databases if a database read is needed to check tokens for every action.
 - Improper token handling (e.g. storing session tokens wrongly) can cause vulnerabilities.
 
-### Middleware Pattern and CORS:
+## Middleware Pattern and CORS:
 
 Because the backend was on a different port to the frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented the Middleware pattern to sit between request and application logic to set up headers needed. 
 
@@ -347,7 +347,7 @@ http.Handle("/login", corsMiddleware(http.HandlerFunc(services.Auth.LoginUser)))
 
 ``` 
 
-### Unit Tests:
+## Unit Tests:
 
 Unit tests have been written for the auth service and the mock database, however I chose not to aim for full code coverage because the focus was on learning and demonstrating abilities.
 
@@ -357,7 +357,7 @@ Within test files it is best practice to name test functions `TestXxx` where `Xx
 
 Also in Go, you can use `t.Run` to group related test cases in subtests.
 
-### DevOps:
+## DevOps:
 
 For simple, and repeatable deployment I have dockerised this project using a compose file to orchestrate the frontend, backend, and db containers.
 
