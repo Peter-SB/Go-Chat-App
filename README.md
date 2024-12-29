@@ -1,8 +1,8 @@
 # Project Overview
 
-This project is an **Instant Messaging Chat App** I made to practice and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerized and orchestrate by **Docker Compose** for repeatable and easy deployment.
+This project is an **Instant Messaging Chat App** I made to practise and expand my full-stack development abilities. It was built with a **Go** backend, a **React** frontend, and a **MySQL** database and all containerised and orchestrated by **Docker Compose** for repeatable and easy deployment.
 
-I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go in an OOP manner. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and custom **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go, as well as a **CI/CD Pipeline** for automatic testing and building.
+I've taken time to implement and explain patterns like **Dependency Injection** and **Interface-Based Polymorphism** as well as how to approach Go in an OOP (Object Oriented Manor) manner. I also investigated, implemented, and explained security measures such as **Session Management**, **CSRF Tokens**, and **CORS Middleware**. The project is complete with some examples of testing practices such as mock services and unit tests for demonstration of best practices in Go. As well, a **CI/CD Pipeline** for automatic testing and building.
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
@@ -45,7 +45,7 @@ I've taken time to implement and explain patterns like **Dependency Injection** 
   - Session Management and CSRF Protection. Implemented from scratch for better understanding.
   - Custom CORS Middleware to handle cross-origin requests.
 - **Architecture**:
-  - Discussion and explanation of Patterns and OOP in Go. Dependency Injection and Interface-Based Polymorphism for services (database and authentication), allowing easy testing with mock implementations.
+  - Discussion and explanation of Patterns and OOP in Go. Dependency Injection and Interface-Based Polymorphism for services (database and authentication).
   - Use of Go channels to broadcast messages to notify active users in real time.
 - **Database Integration:**
   - MySQL for user authentication and message persistence.
@@ -55,8 +55,8 @@ I've taken time to implement and explain patterns like **Dependency Injection** 
 
 ### Frontend (React)
 
-- Built with React Javascript/Typescript. Was good practice although not the focus of this project.
-- Frontend communicates with the backend WebSocket API and REST endpoints.
+- Built with React Javascript/Typescript. This was good practice, although not the focus of this project.
+- Frontend communicates with the backend via WebSocket API and REST endpoints.
 
 ### Database (MySQL)
 
@@ -64,8 +64,8 @@ I've taken time to implement and explain patterns like **Dependency Injection** 
 
 ### DevOps
 
-- Containerized using **Docker Compose** for easy consistent deployments.
-- **CI/CD Github Action** pipeline for running unit tests, and building and pushing docker images.
+- Containerised using **Docker Compose** for easy consistent deployments.
+- **CI/CD GitHub Action** pipeline for running unit tests, and building and pushing docker images.
 
 ### Tools
 
@@ -74,9 +74,9 @@ I've taken time to implement and explain patterns like **Dependency Injection** 
 
 # Motivation
 
-This project was built as a learning exercise while teaching myself **Go** and exploring full-stack development and best practices for web development.
+This project was built as a learning exercise while teaching myself Go and exploring full-stack development and best practices for web development.
 
-There are lots of good Go web frameworks such a Gin that handle some of the stuff implemented however the aim was to practice and learn the core concepts. After this I will be better equipped to use frameworks in future now I better understand the underlying mechanics.
+There are lots of good Go web frameworks such a Gin that handle some of what Ive implemented however, the aim was to practise and learn the core concepts. After this I will be better equipped to use frameworks now I better understand the underlying mechanics.
 
 # Screenshots
 
@@ -86,11 +86,11 @@ There are lots of good Go web frameworks such a Gin that handle some of the stuf
 </p>
 <p align="center">
   <img src='docs/Screenshot-main.png'  style="width:75%;height:75%;">
-  <p align="center"> Chat Screen. Active Users panel displace live information on who's connected. Username and logout option top right. LinkedIn and Github buttons top left (mostly for aesthetics).</p> 
+  <p align="center"> Chat Screen. Active Users panel displays live information on who's connected. Username and logout option top right. LinkedIn and GitHub buttons top left (mostly for aesthetics).</p> 
 </p>
 <p align="center">
   <img src='docs/Screenshot-logged-out.png' style="width:75%;height:75%;">
-  <p align="center"> Logged Out View. When a user is logged out they cant connect to the Websocket </p> 
+  <p align="center"> Logged Out View. When a user is logged out they cant connect to the Websocket. </p> 
 </p>
 
 # Project Structure (Trivial Sections Omitted)
@@ -118,19 +118,19 @@ chat-app/
 │   │   └── models.go
 │   ├── routes/          # API route setup
 │   │   └── routes.go
-│   ├── services/        # Service initializations
+│   ├── services/        # Service initialisations
 │   │   └── services.go
 │   └── utils/           # Utility functions like GetBroadcastChannel and RegisterClient
 │       └── utils.go
 ├── frontend/
 │   ├── src/
 │   │   ├── App.tsx      # Main React entry point
-│   │   └── Chat.tsx     # Chat component
-│   │   └── TopBar.tsx   # Topbar component
-│   │   ├── ....         # Other frontend bits
+│   │   ├── Chat.tsx     # Chat component
+│   │   ├── TopBar.tsx   # Topbar component
+│   │   └── ....         # Other frontend bits
 ├── db/
-│   ├── init.sql/        # Database initialisation config
-├── docker-compose.yml   # Containerization configuration
+│   └── init.sql/        # Database initialisation config
+├── docker-compose.yml   # Containerisation configuration
 └── .env                 # Example environment variables
 
 ```
@@ -139,11 +139,11 @@ chat-app/
 
 ## Object-Oriented Programming Principles and Design Patterns in Go
 
-While Go is not a pure Object-Oriented Programming language, it does support features that allow an OOP-like design approach. Go doesn't have classes or class-based inheritance, it also doesn't allow method overloading. Despite this, we can achieve similar results using Go’s pragmatic approach to programming.
+While Go is not a pure Object-Oriented Programming language, it does support features that allow an OOP-like design approach. Go doesn't have classes or class-based inheritance. It also doesn't allow method overloading. Despite this, we can achieve similar results using Go’s pragmatic approach to programming.
 
 ### Composition-Based Design:
 
-Instead of classes, we can use **structs** to group data fields and even attach methods to structs achieving something similar to classes. That is, instead of a hierarchical inheritance, the focus is on smaller components that are pieced together and built up. This approach allows more flexibility and reusability.
+Instead of classes, we can use **structs** to group data fields and even attach methods to structs achieving something similar to classes. I.e, instead of a hierarchical inheritance, the focus is on smaller components that are pieced together and built up. This approach allows more flexibility and reusability.
 
 ```go
 // User represents a user in the db.
@@ -189,13 +189,13 @@ func (m *MySQLDB) SaveMessage(msg models.Message) error { // Method receiver use
 
 ```
 
-The `MySQLDB` struct acts as a wrapper around the actual database connection. Because it satisfies the `DBInterface`, we can swap or mock functionality without having to change the mySQL implementation.
+The `MySQLDB` struct acts as a wrapper around the actual database connection. Because it satisfies the `DBInterface`, we can swap or mock functionality without having to change the MySQL implementation.
 
 ### Dependency Injection:
 
-This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service. DI is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this by receiving dependencies from an external source rather than creating them internally with the object’s code. While Go doesn't have a DI framework by default, but can be done by passing dependencies as function arguments, or sturct embedding.
+This project demonstrates Dependency Injection (DI) by using it for both the database and the auth service. DI is a design pattern used to achieve Inversion of Control (IoC). (IoC being a design principle where objection creation is separate from the object consuming code.) DI achieves this by receiving dependencies from an external source rather than creating them internally with the object’s code. Go doesn't have a DI framework by built-in default, but DI can be done by passing dependencies as function arguments, or sturct embedding.
 
-Dependency injection coupled with interface-based polymorphism can be really powerful and help improve code’s maintainability, testability, extendable, and flexibility by abstracting dependencies behind an interface and allowing them to be swapped in and out.
+Dependency injection coupled with interface-based polymorphism can be really powerful and help improve code’s maintainability, testability, and flexibility by abstracting dependencies behind an interface and allowing them to be swapped in and out.
 
 ```go
 // Service struct is a container for the services
@@ -237,7 +237,7 @@ See how the `ChatHistoryHandler` takes a reference to the services container and
 
 **Testing:**
 
-The use of Interfaces and DI for the DB and auth service allows them to be easily tested because any dependencies can be easily swapped out and mocked in unit tests. In our project a mock database has be implemented satisfying the `DBInterface` and is swapped in instead of the mySQL implementation in the auth tests.
+The use of Interfaces and DI for the database and auth service allows them to be easily tested because any dependencies can be easily swapped out and mocked in unit tests. In this project a mock database has been implemented satisfying the `DBInterface` and is swapped in instead of the MySQL implementation in the auth tests.
 
 ```go
 func setupAuthService() (*auth.AuthService, *db.MockDB) {
@@ -246,17 +246,17 @@ func setupAuthService() (*auth.AuthService, *db.MockDB) {
 }
 ```
 
-This function in the auth tests create a new auth service injected with a mock database for testing purposes.
+This function in the auth tests creates a new auth service injected with a mock database for testing purposes.
 
-**Flexibility and Scaleability:**
+**Flexibility and Scalability:**
 
-This is not just possible for tests, but can also allow us to decouple business code from specific database implementations. This gives us flexibility to swap service implementations at a later date. For example, swapping to a different database. This allows scalability by allow services to grow and change without affecting business logic. The approach encourages clean architecture and separation of concerns also.
+This is not just possible for tests, but can also allow us to decouple business code from specific database implementations. This gives us flexibility to swap service implementations at a later date. For example, swapping to a different database. This allows scalability by allowing services to grow and change without affecting business logic. This approach also encourages clean architecture and separation of concerns.
 
 ### Concurrency in Go:
 
-This program uses concurrency by making use of Go’s Goroutines, channels, and mutex to handle tasks that can run independently and in parallel. Goroutines are lightweight threads managed by Go's runtime, allowing us to execute multiple tasks at the same time. Channels provide a way for Goroutines to communicate safely, ensuring data consistency and avoiding race conditions. Mutexes (mutual exclusions) ensure safe access to shared resources
+This program uses concurrency by making use of Go’s Goroutines, Channels, and Mutex to handle tasks that can run independently and in parallel. Goroutines are lightweight threads managed by Go's runtime, allowing us to execute multiple tasks at the same time. Channels provide a way for Goroutines to communicate safely, ensuring data consistency and avoiding race conditions. Mutexes (mutual exclusions) ensure safe access to shared resources.
 
-For example, the `broadcast.StartBroadcastListener()` Goroutine listens on a shared channel to receive messages and broadcasts them to all connected clients A mutex ensures that the shared `clients` map is accessed safely:
+For example, the `broadcast.StartBroadcastListener()` Goroutine listens on a shared channel to receive messages, and broadcasts them to all connected clients. A mutex ensures that the shared `clients` map is accessed safely.
 
 ```go
 // Example Channel for broadcasting messages
@@ -296,7 +296,7 @@ Here, `StartBroadcastListener` runs as a Goroutine and continuously listens for 
 
 ### Websockets:
 
-I first started this project to get more hands on experience with Websockets. Initially just for the instant messaging communication. I later expanded this to also communicate active user updates as well. It’s often considered the de facto standard, even though it isn’t part of the official net/http library.
+I first started this project to get more hands-on experience with Websockets. Initially, websockets were implemented just for the instant messaging communication. I later expanded this to also communicate active user updates. `gorilla/websocket` is often considered the de facto standard, even though it isn’t part of the official net/http library.
 
 ```go
 // HandleConnections handles when a user connects. It authenticates, upgrades the HTTP connection to a WebSocket connection,
@@ -318,28 +318,28 @@ func HandleConnections(services *services.Services) http.HandlerFunc {
 
 ### Session Authentication and CSRF Tokens:
 
-As part of this I really enjoyed learning more about session and CSRF tokens, and implement them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stops these vulnerabilities was particularly interesting to learn.
+As part of this project I really enjoyed learning more about Session and CSRF Tokens, and implementing them myself from scratch. While JWT and OAuth are more modern standards, session tokens are still widely used. Understanding how this introduces security vulnerabilities and how CSRF tokens stop these vulnerabilities was particularly interesting to learn.
 
 **Explanation:**
 
-The core idea is that a session token is a way of identifying a user for a given period. This token is given to the user as a cookie when they log in and can be used to identify themselves when they make a request (such as connecting to the chat web socket or accessing their profile).
+The core idea is that a session token is a way of identifying a user for a given period. This token is given to the user as a cookie when they log in and can be used to identify themselves when they make a request (such as connecting to the chat websocket or accessing their profile).
 
-However, this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could redirect an unexpecting user to make a request without the user's knowing.
+However, this can introduce a vulnerability called CSRF (cross site request forgery). Because cookies are automatically sent with requests, a malicious website could direct an unsuspecting user to make a request without the user's knowledge.
 
-CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they login, also as a cookie, Same-origin polic only allows authorised pages to access the CSRF token and attach it as a customer header.
+CSRF tokens protect against this by verifying the origin of the request. By sending a user a CSRF token when they log in, also as a cookie, Same-Origin Policy only allows authorised pages to access the CSRF token and attach it as a custom header.
 
-**For Example**: You get tricked into clicking a dodgy link. The malicious website then sends a request on your behalf to bank.com to transfer funds. Because you had already logged into bank.com earlier, you still have a session cookie which will automatically be sent by your browser with the fraudulent request. However, the malicious websites can't access the content of another site's cookie with the correct same/cross origin policy. Only the original site can access that cookie data and manually attach it to the request headers, identifying the request as coming from an authorised origin.  
+**For Example**: You get tricked into clicking a dodgy link. The malicious website then sends a request on your behalf to bank.com to transfer funds. Because you had already logged into bank.com earlier, you still have a session cookie which will automatically be sent by your browser with the fraudulent request. However, the malicious websites can't access the content of another site's cookies when the correct same-origin policy is set. Only the original site can access that cookie data and manually attach it to the request headers, identifying the request as coming from an authorised origin.  
 
-CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the Websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since its a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
+CSRF tokens are not needed everywhere though. If you load the website and have previously logged in and already have a session token, you can be automatically connected to the Websocket. However, the browser needs to know the username to connect. So the session-check endpoint allows the browser to check the session token validity and get the username. This endpoint however wont bother checking the CSRF token since it is a GET endpoint and not performing any actions on behalf of the user. Generally CSRF tokens are only needed for state-changing operations.
 
 **Downsides:**
 
-- highly distributed systems can put a strain on reading session tokens from databases if a database read is needed to check tokens for every action.
-- Improper token handling (e.g. storing session tokens wrong) can cause vulnerabilities.
+- Highly distributed systems can put a strain on reading session tokens from databases if a database read is needed to check tokens for every action.
+- Improper token handling (e.g. storing session tokens wrongly) can cause vulnerabilities.
 
 ### Middleware Pattern and CORS:
 
-Because my backend was on a different port to my frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented the Middleware pattern to sit between request and application logic to set up headers needed. 
+Because the backend was on a different port to the frontend, I had to add Cross-Origin Resource Sharing headers to my requests. To do this I implemented the Middleware pattern to sit between request and application logic to set up headers needed. 
 
 This is typicaly done in Go by wrapping the `http.Handler` in or using a handler function. E.g:
 ``` go
@@ -351,9 +351,9 @@ http.Handle("/login", corsMiddleware(http.HandlerFunc(services.Auth.LoginUser)))
 
 Unit tests have been written for the auth service and the mock database, however I chose not to aim for full code coverage because the focus was on learning and demonstrating abilities.
 
-In Go, it is est practice is to name test files `_test.go` and put them in the same directory as the code they are testing. This is to make it easy to find the tests and supposedly encourages writing tests alongside the code. It is suggested to use separate directories for integration tests.
+In Go, it is best practice to name test files `_test.go` and put them in the same directory as the code they are testing. This is to make it easy to find the tests and supposedly encourages writing tests alongside the code. It is suggested to use separate directories for integration tests.
 
-Within test files is is best practice to name test functions `TestXxx` where `Xxx` describes the test.
+Within test files it is best practice to name test functions `TestXxx` where `Xxx` describes the test.
 
 Also in Go, you can use `t.Run` to group related test cases in subtests.
 
@@ -361,20 +361,20 @@ Also in Go, you can use `t.Run` to group related test cases in subtests.
 
 For simple, and repeatable deployment I have dockerised this project using a compose file to orchestrate the frontend, backend, and db containers.
 
-- **Multistage Builds**: Both the front end and backend use a multistage build process to optimise docker image sizes. For example the Go image used is an Alpine image, a light weight version that includes only the necessary executable.
+- **Multistage Builds**: Both the frontend and backend use a multistage build process to optimise docker image sizes. For example the Go image used is an Alpine image, a lightweight version that includes only the necessary executable.
 - **Shared Network**: The services communicate via a Docker bridge network. Defined as `app-network` this is important for us because it makes communication between containers secure and isolated.
-- **Persistent Volume**: A volume is used to allow data persistence. Defined here by `db-data`. Also the mySQL uses a script to define the schema on first run.
+- **Persistent Volume**: A volume is used to allow data persistence. Defined here by `db-data`. Also the MySQL uses a script to define the schema on first run.
 - **Service Dependencies**: The backend service is set to depend on the database (depends_on) to keep proper startup order.
-- **Environment Variables**: A `.env` file is used for a central management of environment variables. Usually this would not get commited but for demonstration it has been kept.
+- **Environment Variables**: A `.env` file is used for a central management of environment variables. Usually this would not get committed but for demonstration it has been kept.
 
 I have also made use of a **Github Actions Ci/CD Pipeline** to run the unit tests and only if that job succeeds, build and push the docker images to my docker hub. In future I would like to also make this pipeline deploy my containers to a home server.
 
 # Further Expansion
 
-- **Chat Paging and Offseting**: By adding paging and offsetting to the history endpoint we cand reduce the amount of data returned in the request.
-- **Rate Limiting**: This would protect the website from brute force and denial of service attacks.
-- **Repository Pattern**: I was investigating other patterns such as using a repository pattern. By implementing this I could increase the testability of my database code and allow easy integration with other databases. However given the size of the program, and a general "less is more" mindset of Go, I chose not to go this far.
-- **General Refactor:** - Some files have become a bit bloated and could do with a refactor if further functionality were going to be added.
+- **Chat Paging and Offsetting**: By adding paging and offsetting to the history endpoint we can reduce the amount of data returned in the request.
+- **Rate Limiting**: This would protect the website from brute force and denial-of-service attacks.
+- **Repository Pattern**: I was investigating other Patterns such as using a Repository Pattern. By implementing this I could increase the testability of my database code and allow easy integration with other databases. However, given the size of the program, and a general "less is more" mindset of Go, I chose not to go this far.
+- **General Refactor:** - Some files have become a bit bloated and could do with a refactor if further functionality was to be added.
 
 ## How to Run
 
